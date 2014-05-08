@@ -1,3 +1,5 @@
+'use strict';
+
 // This example uses the Phaser 2.0.4 framework
 
 // Copyright © 2014 John Watson
@@ -8,13 +10,24 @@ var GameState = function(game) {
 
 // Load images and sounds
 GameState.prototype.preload = function() {
+    this.game.load.image('cloud', '/assets/gfx/ball.png');
     this.game.load.image('bullet', '/assets/gfx/bullet.png');
     this.game.load.image('ground', '/assets/gfx/ground.png');
     this.game.load.spritesheet('explosion', '/assets/gfx/explosion.png', 128, 128);
+    this.game.load.spritesheet('cyclops', '/assets/gfx/monster.png', 32, 32);
 };
+
+var socket;
+
+var bulletPool;
 
 // Setup the example
 GameState.prototype.create = function() {
+    var port = document.location.port === '5000' ? '5000' : '8000';
+    var address = document.location.protocol + '//' + document.location.hostname;
+    socket = io.connect(address, {port: port, transports: ['websocket']})
+
+
     // Set stage background color
     this.game.stage.backgroundColor = 0x4488cc;
 
@@ -30,12 +43,22 @@ GameState.prototype.create = function() {
     // Set the pivot point to the center of the gun
     this.gun.anchor.setTo(0.5, 0.5);
 
+
+    // Create an object representing our target
+    this.monster = this.game.add.sprite(this.game.width - 200, this.game.height - 64, 'cyclops');
+    // Enable physics on the bullet
+    this.game.physics.enable(this.monster, Phaser.Physics.ARCADE);
+    this.monster.body.collideWorldBounds = true;
+    this.monster.events.onKilled.add(function(monster) {
+        this.getExplosion(monster.x, monster.y, monster);
+    }, this);
+
     // Create an object pool of bullets
-    this.bulletPool = this.game.add.group();
+    bulletPool = this.game.add.group();
     for(var i = 0; i < this.NUMBER_OF_BULLETS; i++) {
         // Create each bullet and add it to the group.
         var bullet = this.game.add.sprite(0, 0, 'bullet');
-        this.bulletPool.add(bullet);
+        bulletPool.add(bullet);
 
         // Set its pivot point to the center of the bullet
         bullet.anchor.setTo(0.5, 0.5);
@@ -45,10 +68,22 @@ GameState.prototype.create = function() {
 
         // Set its initial state to "dead".
         bullet.kill();
+
+        bullet.events.onKilled.add(function(bullet1) {
+            this.getExplosion(bullet1.x, bullet1.y);
+        }, this);
     }
 
     // Turn on gravity
     game.physics.arcade.gravity.y = this.GRAVITY;
+
+    // Let's make some clouds
+    for(var x = -56; x < this.game.width; x += 80) {
+        var cloud = this.game.add.image(x, -80, 'cloud');
+        cloud.scale.setTo(5, 5); // Make the clouds big
+        cloud.tint = 0xcccccc; // Make the clouds dark
+        cloud.smoothed = false; // Keeps the sprite pixelated
+    }
 
     // Create some ground
     this.ground = this.game.add.group();
@@ -60,6 +95,13 @@ GameState.prototype.create = function() {
         groundBlock.body.allowGravity = false;
         this.ground.add(groundBlock);
     }
+
+    // // Create a pool of cyclopes
+    // var MONSTERS = 50;
+    // this.monsterGroup = this.game.add.group();
+    // this.monsterGroup.enableBody = true;
+    // this.monsterGroup.physicsBodyType = Phaser.Physics.ARCADE;
+    // this.monsterGroup.createMultiple(MONSTERS, 'cyclops', 0);
 
     // Create a group for explosions
     this.explosionGroup = this.game.add.group();
@@ -80,7 +122,30 @@ GameState.prototype.create = function() {
     this.fpsText = this.game.add.text(
         20, 20, '', { font: '16px Arial', fill: '#ffffff' }
     );
+
+    setEventHandlers();
 };
+
+
+var setEventHandlers = function() {
+    socket.on('connect', onSocketConnected);
+    socket.on('disconnect', onSocketDisconnect);
+    socket.on('shootBullet', onShootBullet);
+};
+
+function onSocketConnected () {
+    console.log('Connected to socket server');
+}
+
+function onSocketDisconnect () {
+    console.log('Disconnected from socket server');
+}
+
+function onShootBullet (data) {
+    console.log('Player shot with angle: ' + data.angle);
+    GameState.prototype.shootBullet(data);
+}
+
 
 GameState.prototype.drawTrajectory = function() {
     // Clear the bitmap
@@ -114,7 +179,7 @@ GameState.prototype.drawTrajectory = function() {
     this.bitmap.dirty = true;
 };
 
-GameState.prototype.shootBullet = function() {
+GameState.prototype.pullTrigger = function() {
     // Enforce a short delay between shots by recording
     // the time that each bullet is shot and testing if
     // the amount of time since the last shot is more than
@@ -123,8 +188,17 @@ GameState.prototype.shootBullet = function() {
     if (this.game.time.now - this.lastBulletShotAt < this.SHOT_DELAY) return;
     this.lastBulletShotAt = this.game.time.now;
 
+    socket.emit('shootBullet', {x: this.gun.x, y: this.gun.y, angle: this.gun.rotation, speed: this.BULLET_SPEED});
+}
+
+GameState.prototype.shootBullet = function(bulletData) {
+    var x = bulletData.x;
+    var y = bulletData.y;
+    var angle = bulletData.angle;
+    var speed = bulletData.speed;
+
     // Get a dead bullet from the pool
-    var bullet = this.bulletPool.getFirstDead();
+    var bullet = bulletPool.getFirstDead();
 
     // If there aren't any bullets available then don't shoot
     if (bullet === null || bullet === undefined) return;
@@ -141,12 +215,12 @@ GameState.prototype.shootBullet = function() {
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the gun position.
-    bullet.reset(this.gun.x, this.gun.y);
-    bullet.rotation = this.gun.rotation;
+    bullet.reset(x, y);
+    bullet.rotation = angle;
 
     // Shoot it in the right direction
-    bullet.body.velocity.x = Math.cos(bullet.rotation) * this.BULLET_SPEED;
-    bullet.body.velocity.y = Math.sin(bullet.rotation) * this.BULLET_SPEED;
+    bullet.body.velocity.x = Math.cos(bullet.rotation) * speed;
+    bullet.body.velocity.y = Math.sin(bullet.rotation) * speed;
 };
 
 // The update() method is called every frame
@@ -158,17 +232,23 @@ GameState.prototype.update = function() {
     // Draw the trajectory every frame
     this.drawTrajectory();
 
-    // Check if bullets have collided with the ground
-    this.game.physics.arcade.collide(this.bulletPool, this.ground, function(bullet, ground) {
-        // Create an explosion
-        this.getExplosion(bullet.x, bullet.y);
+    this.game.physics.arcade.collide(this.monster, this.ground);
 
+    // Check if bullet have collided with the monster
+    this.game.physics.arcade.collide(bulletPool, this.monster, function(monster, bullet) {
+        // Kill the monster
+        bullet.kill();
+        monster.kill();
+    }, null, this);
+
+    // Check if bullets have collided with the ground
+    this.game.physics.arcade.collide(bulletPool, this.ground, function(bullet, ground) {
         // Kill the bullet
         bullet.kill();
     }, null, this);
 
     // Rotate all living bullets to match their trajectory
-    this.bulletPool.forEachAlive(function(bullet) {
+    bulletPool.forEachAlive(function(bullet) {
         bullet.rotation = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x);
     }, this);
 
@@ -179,7 +259,7 @@ GameState.prototype.update = function() {
 
     // Shoot a bullet
     if (this.game.input.activePointer.isDown) {
-        this.shootBullet();
+        this.pullTrigger();
     }
 };
 
@@ -187,7 +267,7 @@ GameState.prototype.update = function() {
 // If an explosion isn't available, create a new one and add it to the group.
 // Setup new explosions so that they animate and kill themselves when the
 // animation is complete.
-GameState.prototype.getExplosion = function(x, y) {
+GameState.prototype.getExplosion = function(x, y, monster) {
     // Get the first dead explosion from the explosionGroup
     var explosion = this.explosionGroup.getFirstDead();
 
@@ -204,6 +284,15 @@ GameState.prototype.getExplosion = function(x, y) {
         // Add the explosion sprite to the group
         this.explosionGroup.add(explosion);
     }
+
+    console.log('the monster is ' + (monster != null));
+
+    if (monster != null) {
+        explosion.tint = 0xff0000;
+    } else {
+        explosion.tint = 0xffffff;
+    }
+
 
     // Revive the explosion (set it's alive property to true)
     // You can also define a onRevived event handler in your explosion objects
