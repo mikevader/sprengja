@@ -23,9 +23,8 @@ var bulletPool;
 
 // Setup the example
 GameState.prototype.create = function() {
-    var port = document.location.port;
-    var address = location.origin.replace(/^http/, 'ws');
-    socket = io.connect(address, {transports: ['websocket']})
+    var host = location.origin.replace(/^http/, 'ws');
+    socket = io.connect(host, {transports: ['websocket']})
 
 
     // Set stage background color
