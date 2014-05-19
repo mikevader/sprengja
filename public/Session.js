@@ -9,16 +9,26 @@ var GameState = {
 	GAME_OVER : 'targetHit'
 };
 
-var Session = function() {
+var Session = function(session) {
 	var playerA = null, playerB = null, finished = false, activePlayer = null;
-	var state = GameState;
+	var state = GameState.INIT;
 	var fireAtAngle = 0;
 	var victoriousPlayer = null;
+
+	if (typeof session !== 'undefined') {
+		playerA = session.playerA;
+		playerB = session.playerB;
+		finished = session.finished;
+		activePlayer = session.activePlayer;
+		state = session.state;
+		fireAtAngle = session.fireAtAngle;
+		victoriousPlayer = session.victoriousPlayer;
+	}
 
 	function createState(event) {
 		return {
 			event: event,
-			playerA: playerA,
+			'playerA': playerA,
 			playerB: playerB,
 			activePlayer: activePlayer,
 			fireAtAngle: fireAtAngle,
@@ -80,6 +90,6 @@ var Session = function() {
 };
 
 // To use insie node.js with require:
-if (typeof exports !== undefined) {
+if (typeof exports !== 'undefined') {
 	exports.Session = Session;
 }

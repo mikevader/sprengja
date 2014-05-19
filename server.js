@@ -90,6 +90,11 @@ function onSocketConnection (client) {
 	client.emit('joined game', newPlayer);
 	util.log('Player ' + newPlayer.name + ' has joined!');
 
+	session.activePlayer = newPlayer;
+	util.log('Active player is: ' + session.activePlayer.name);
+
+	//util.log(session.status().playerA.name);
+
 	if (session.isReady()) {
 		client.emit('game ready', session);
 		client.broadcast.emit('game ready', session);
@@ -125,7 +130,6 @@ function onClientDisconnect () {
 function onShootBullet(data) {
 	util.log('Player shot with angle: ' + data);
 	this.broadcast.emit('shootBullet', data);
-	this.emit('shootBullet', data);
 };
 
 /**************************************************

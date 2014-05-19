@@ -100,50 +100,50 @@ GameState.prototype.create = function() {
     );
 };
 
-GameState.prototype.initGame = function() {
+GameState.prototype.initGame = function(session) {
+    if (this.initialized) {
+        console.log('game already initialized');
+        return;
+    }
     console.log('init game');
-    console.log(this);
-    // Create an object representing our myGun
-    this.myGun = game.add.sprite(this.player.x, this.player.y, 'bullet');
-    // Set the pivot point to the center of the myGun
-    this.myGun.anchor.setTo(0.5, 0.5);
-    this.myGun.tint = 0x00ff00;
-    this.myGun.rotation = this.player.angle;
-    this.myGun.events.onKilled.add(function(myGun) {
-        this.getExplosion(myGun.x, myGun.y, myGun);
-    }, this);
 
-    this.game.physics.enable(this.myGun, Phaser.Physics.ARCADE);
-    this.myGun.body.immovable = true;
-    this.myGun.body.allowGravity = false;
+    // Create an object representing our myGun
+    this.myGun = createGun(this, this.player, 0x00ff00);
 
 
     // Create an object representing our otherGun
-    this.otherGun = game.add.sprite(this.otherPlayer.x, this.otherPlayer.y, 'bullet');
-    // Set the pivot point to the center of the otherGun
-    this.otherGun.anchor.setTo(0.5, 0.5);
-    this.otherGun.tint = 0xff0000;
-    this.otherGun.rotation = this.otherPlayer.angle;
-    this.otherGun.events.onKilled.add(function(otherGun) {
-        this.getExplosion(otherGun.x, otherGun.y, otherGun);
-    }, this);
-
-    this.game.physics.enable(this.otherGun, Phaser.Physics.ARCADE);
-    this.otherGun.body.immovable = true;
-    this.otherGun.body.allowGravity = false;
+    this.otherGun = createGun(this, this.otherPlayer, 0xff0000);
 
 
-    // Create an object representing our target
-    this.monster = game.add.sprite(game.width - 200, game.height - 64, 'cyclops');
-    // Enable physics on the bullet
-    game.physics.enable(this.monster, Phaser.Physics.ARCADE);
-    this.monster.body.collideWorldBounds = true;
-    this.monster.events.onKilled.add(function(monster) {
-        this.getExplosion(monster.x, monster.y, monster);
-    }, this);
+    // // Create an object representing our target
+    // this.monster = game.add.sprite(game.width - 200, game.height - 64, 'cyclops');
+    // // Enable physics on the bullet
+    // game.physics.enable(this.monster, Phaser.Physics.ARCADE);
+    // this.monster.body.collideWorldBounds = true;
+    // this.monster.events.onKilled.add(function(monster) {
+    //     this.getExplosion(monster.x, monster.y, monster);
+    // }, this);
 
     this.initialized = true;
 };
+
+function createGun(gameState, player, color) {
+    var gun = gameState.game.add.sprite(player.x, player.y, 'bullet');
+    // Set the pivot point to the center of the myGun
+    gun.anchor.setTo(0.5, 0.5);
+    gun.tint = color;
+    gun.rotation = player.angle;
+    gun.events.onKilled.add(function(myGun) {
+        gameState.getExplosion(myGun.x, myGun.y, myGun);
+    }, game);
+
+    gameState.game.physics.enable(gun, Phaser.Physics.ARCADE);
+    gun.body.immovable = true;
+    gun.body.allowGravity = false;
+
+    return gun;
+}
+
 
 
 GameState.prototype.setEventHandlers = function() {
@@ -158,15 +158,29 @@ function onGameReady (session) {
     console.log('game is ready')
     var gameState = game.state.getCurrentState();
 
-    if (gameState.player.name === 'A') {
-        gameState.otherPlayer = session.playerB;
-    } else {
-        gameState.otherPlayer = session.playerA;
-    }
+    console.log(session);
+
+    gameState.session = new Session(session);
+
+    gameState.player = playerById([session.playerA, session.playerB], this.socket.sessionid);
+    gameState.otherPlayer = (session.playerA == gameState.player) ? session.playerB : session.playerA;
 
     console.log('Other player: ' + gameState.otherPlayer.name + ' with stats: x: ' + gameState.otherPlayer.x + ', y: ' + gameState.otherPlayer.y+ ', angle: ' + gameState.otherPlayer.angle);
 
-    gameState.initGame();
+    gameState.initGame(session);
+}
+
+function playerById(players, id) {
+    console.log('find player by id: ' + id);
+    var i;
+    for (i = 0; i < players.length; i++) {
+        console.log('player with index ' + i + ' has id: ' + players[i].id)
+        if (players[i].id == id) {
+            return players[i];
+        }
+    }
+
+    return null;
 }
 
 function onJoinedGame(playerStats) {
@@ -192,11 +206,11 @@ function onSocketDisconnect () {
     console.log('Disconnected from socket server');
 }
 
-function onShootBullet (data) {
-    console.log('Player shot with angle: ' + data.angle);
+function onShootBullet (session) {
+    console.log('Player shot with angle: ' + session.fireAtAngle);
     var gameState = game.state.getCurrentState();
 
-    gameState.shootBullet(data);
+    gameState.shootBullet(session);
 }
 
 
@@ -241,14 +255,31 @@ GameState.prototype.pullTrigger = function() {
     if (this.game.time.now - this.lastBulletShotAt < this.SHOT_DELAY) return;
     this.lastBulletShotAt = this.game.time.now;
 
-    this.socket.emit('shootBullet', {x: this.myGun.x, y: this.myGun.y, angle: this.myGun.rotation, speed: this.BULLET_SPEED});
+    var bulletData = {x: this.myGun.x, y: this.myGun.y, angle: this.myGun.rotation, speed: this.BULLET_SPEED};
+
+    var shootState = this.session.shootBullet(bulletData);
+    this.socket.emit('shootBullet', shootState);
+    this.shootBullet(shootState);
 }
 
-GameState.prototype.shootBullet = function(bulletData) {
-    var x = bulletData.x;
-    var y = bulletData.y;
-    var angle = bulletData.angle;
-    var speed = bulletData.speed;
+GameState.prototype.shootBullet = function(session) {
+    var x = null;
+    var y = null;
+    var angle = session.fireAtAngle.angle;
+    var speed = this.BULLET_SPEED;
+
+    if (this.player.id == session.activePlayer.id) {
+        x = this.myGun.x;
+        y = this.myGun.y;
+    } else {
+        x = this.otherGun.x;
+        y = this.otherGun.y;
+    }
+
+    console.log('current player: ' + session.activePlayer.id);
+    console.log('this.player: ' + this.player.id);
+    console.log('gun {x: ' + x + ', y: ' + y + ', angle: ' + angle + ', speed: ' + speed + '}')
+
 
     // Get a dead bullet from the pool
     var bullet = this.bulletPool.getFirstDead();
