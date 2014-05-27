@@ -23,7 +23,7 @@ var app, connection, session, players;
  ********************************/
 function init() {
 	//sessions = [];
-	session = new Session;
+	session = new Session();
 	players = [];
 	var port = Number(process.env.PORT || 5000);
 

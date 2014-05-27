@@ -1,92 +1,162 @@
+'use strict';
 /********************************
  *  GAME SESSION CLASS
  ********************************/
 
-var GameState = {
-	INIT : 'init',
-	READY_FOR_SHOT : 'shoot',
-	MISSLE_IN_THE_AIR : 'flying',
-	GAME_OVER : 'targetHit'
+var SessionState = {
+	INIT: 'init',
+	READY_FOR_SHOT: 'shoot',
+	MISSLE_IN_THE_AIR: 'flying',
+	GAME_OVER: 'targetHit'
 };
 
 var Session = function(session) {
-	var playerA = null, playerB = null, finished = false, activePlayer = null;
-	var state = GameState.INIT;
-	var fireAtAngle = 0;
-	var victoriousPlayer = null;
+	this.state = SessionState.INIT;
+	this.victoriousPlayer = null;
+	var playerA, playerB, activePlayer, finished, fireAtAngle;
+
+	console.log('Init: ' + this.state);
+
+	function createNewGame() {
+		console.log('Slot A is free');
+		playerA = {
+			name: 'A',
+			x: 100,
+			y: 386,
+			angle: 0,
+			id: 'id_A'
+		};
+
+		console.log('Slot B is free');
+		playerB = {
+			name: 'B',
+			x: 748,
+			y: 386,
+			angle: -Math.PI,
+			id: 'id_B'
+		}
+
+		activePlayer = playerA;
+	};
 
 	if (typeof session !== 'undefined') {
-		playerA = session.playerA;
-		playerB = session.playerB;
-		finished = session.finished;
-		activePlayer = session.activePlayer;
-		state = session.state;
-		fireAtAngle = session.fireAtAngle;
-		victoriousPlayer = session.victoriousPlayer;
+		this.playerA = session.playerA;
+		this.playerB = session.playerB;
+		this.finished = session.finished;
+		this.activePlayer = session.activePlayer;
+		this.state = session.state;
+		this.fireAtAngle = session.fireAtAngle;
+		this.victoriousPlayer = session.victoriousPlayer;
+	} else {
+		createNewGame();
+		this.playerA = playerA;
+		this.playerB = playerB;
+		this.finished = finished;
+		this.activePlayer = activePlayer;
+		this.fireAtAngle = fireAtAngle;
 	}
 
-	function createState(event) {
+	
+
+
+	this.createState = function(event) {
 		return {
 			event: event,
-			'playerA': playerA,
-			playerB: playerB,
-			activePlayer: activePlayer,
-			fireAtAngle: fireAtAngle,
-			state: state,
-			victoriousPlayer: victoriousPlayer
+			playerA: this.playerA,
+			playerB: this.playerB,
+			activePlayer: this.activePlayer,
+			fireAtAngle: this.fireAtAngle,
+			state: this.state,
+			victoriousPlayer: this.victoriousPlayer
 		};
 	}
 
-	function init() {
-		return createState('init');
+	this.init = function() {
+		console.log('Init Session');
+		this.state = SessionState.READY_FOR_SHOT;
+		return this.createState('init');
 	}
+
+	this.playerById = function(id) {
+		var players = [this.playerA, playerB];
+	    console.log('find player by id: ' + id);
+
+	    for (var i = 0; i < players.length; i++) {
+	        console.log('player with index ' + i + ' has id: ' + players[i].id)
+	        if (players[i].id == id) {
+	            return players[i];
+	        }
+	    }
+
+	    return null;
+	}
+
+
+	this.statusText = function() {
+		if (this.state === SessionState.INIT) {
+			return 'Waiting to start!';
+		} else if (this.state === SessionState.READY_FOR_SHOT) {
+			return this.activePlayer.name + ' shoot!';
+		} else if (this.state === SessionState.MISSLE_IN_THE_AIR) {
+			return this.activePlayer.name + ' fired. Waiting for impact';
+		} else if (this.state === SessionState.GAME_OVER) {
+			return 'Target destroyed. ' + this.victoriousPlayer.name + ' wins!';
+		} else {
+			return 'INVALID STATE';
+		}
+	};
 
 	this.isReady = function() {
 		return this.playerA != null && this.playerB != null;
 	};
 
+	this.isReadyForPlayer = function() {
+		return this.isReady() && this.state === SessionState.READY_FOR_SHOT;
+	}
+
 	this.shootBullet = function(angle) {
-		if (this.state != GameState.READY_FOR_SHOT) {
+		if (this.state != SessionState.READY_FOR_SHOT) {
 			console.log('tryed to shoot in the wrong state!!!! current state: ' + this.state);
 
-			return createState('status');
+			return this.createState('status');
 		}
+		this.state = SessionState.MISSLE_IN_THE_AIR;
 
-		fireAtAngle = angle;
+		this.fireAtAngle = angle;
 
-		return createState('firedShot');
+		return this.createState('firedShot');
 	};
 
 	this.hitPlayer = function(destroyedPlayer) {
-		if (destroyedPlayer == playerA) {
-			victoriousPlayer = playerB;
+		if (this.destroyedPlayer == this.playerA) {
+			this.victoriousPlayer = this.playerB;
 		} else {
-			victoriousPlayer = playerA;
+			this.victoriousPlayer = this.playerA;
 		}
 
-		finished = true;
-		state = GameState.GAME_OVER;
+		this.finished = true;
+		this.state = SessionState.GAME_OVER;
 
-		return createState('gameover')
+		return this.createState('gameover')
 	};
 
 	this.hitNothing = function() {
-		if (activePlayer == playerA) {
-			activePlayer = playerB;
+		if (this.activePlayer == this.playerA) {
+			this.activePlayer = this.playerB;
 		} else {
-			activePlayer = playerA;
+			this.activePlayer = this.playerA;
 		}
 
-		state = GameState.READY_FOR_SHOT;
+		this.fireAtAngle = null;
 
-		return createState('nextPlayer')
+		this.state = SessionState.READY_FOR_SHOT;
+
+		return this.createState('nextPlayer')
 	};
 
 	this.status = function() {
-		return createState('status');
+		return this.createState('status');
 	};
-
-	init();
 };
 
 // To use insie node.js with require:

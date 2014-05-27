@@ -1,10 +1,5 @@
 'use strict';
 
-// This example uses the Phaser 2.0.4 framework
-
-// Copyright © 2014 John Watson
-// Licensed under the terms of the MIT License
-
 var GameState = function(game) {
 };
 
@@ -24,7 +19,7 @@ GameState.prototype.create = function() {
     this.setEventHandlers();
 
     this.debug = {
-        showTrajectory: false
+        showTrajectory: true
     };
 
     // Set stage background color
@@ -105,7 +100,21 @@ GameState.prototype.initGame = function(session) {
         console.log('game already initialized');
         return;
     }
-    console.log('init game');
+
+    if (typeof session === 'undefined') {
+        console.log('init game local');
+        this.session = new Session();
+        console.log(this.session);
+        this.player = this.session.playerA;
+        this.otherPlayer = this.session.playerB;
+    } else {
+        console.log('init game remote');
+        this.player = this.session.playerById([this.session.playerA, this.session.playerB], this.socket.sessionid);
+        this.otherPlayer = (this.session.playerA == this.player) ? this.session.playerB : this.session.playerA;
+    }
+
+    console.log('Player: ' + this.player.name + ' with stats: x: ' + this.player.x + ', y: ' + this.player.y+ ', angle: ' + this.player.angle + ', id: ' + this.player.id);
+    console.log('Other player: ' + this.otherPlayer.name + ' with stats: x: ' + this.otherPlayer.x + ', y: ' + this.otherPlayer.y+ ', angle: ' + this.otherPlayer.angle + ', id: ' + this.otherPlayer.id);
 
     // Create an object representing our myGun
     this.myGun = createGun(this, this.player, 0x00ff00);
@@ -124,6 +133,7 @@ GameState.prototype.initGame = function(session) {
     //     this.getExplosion(monster.x, monster.y, monster);
     // }, this);
 
+    this.session.init();
     this.initialized = true;
 };
 
@@ -155,32 +165,14 @@ GameState.prototype.setEventHandlers = function() {
 };
 
 function onGameReady (session) {
-    console.log('game is ready')
-    var gameState = game.state.getCurrentState();
+    // console.log('game is ready')
+    // var gameState = game.state.getCurrentState();
 
-    console.log(session);
+    // this.session = new Session(session);
 
-    gameState.session = new Session(session);
+    // console.log(session);
 
-    gameState.player = playerById([session.playerA, session.playerB], this.socket.sessionid);
-    gameState.otherPlayer = (session.playerA == gameState.player) ? session.playerB : session.playerA;
-
-    console.log('Other player: ' + gameState.otherPlayer.name + ' with stats: x: ' + gameState.otherPlayer.x + ', y: ' + gameState.otherPlayer.y+ ', angle: ' + gameState.otherPlayer.angle);
-
-    gameState.initGame(session);
-}
-
-function playerById(players, id) {
-    console.log('find player by id: ' + id);
-    var i;
-    for (i = 0; i < players.length; i++) {
-        console.log('player with index ' + i + ' has id: ' + players[i].id)
-        if (players[i].id == id) {
-            return players[i];
-        }
-    }
-
-    return null;
+    // gameState.initGame(session);
 }
 
 function onJoinedGame(playerStats) {
@@ -234,12 +226,15 @@ GameState.prototype.drawTrajectory = function() {
 
     // Draw the trajectory
     // http://en.wikipedia.org/wiki/Trajectory_of_a_projectile#Angle_required_to_hit_coordinate_.28x.2Cy.29
-    var theta = -this.myGun.rotation;
+
+    var currentGun = this.getCurrentGun();
+
+    var theta = -currentGun.rotation;
     var x = 0, y = 0;
     for(var t = 0 + this.timeOffset/(1000*MARCH_SPEED/60); t < 3; t += 0.03) {
         x = this.BULLET_SPEED * t * Math.cos(theta) * correctionFactor;
         y = this.BULLET_SPEED * t * Math.sin(theta) * correctionFactor - 0.5 * this.GRAVITY * t * t;
-        this.bitmap.context.fillRect(x + this.myGun.x, this.myGun.y - y, 3, 3);
+        this.bitmap.context.fillRect(x + currentGun.x, currentGun.y - y, 3, 3);
         if (y < -15) break;
     }
 
@@ -255,7 +250,9 @@ GameState.prototype.pullTrigger = function() {
     if (this.game.time.now - this.lastBulletShotAt < this.SHOT_DELAY) return;
     this.lastBulletShotAt = this.game.time.now;
 
-    var bulletData = {x: this.myGun.x, y: this.myGun.y, angle: this.myGun.rotation, speed: this.BULLET_SPEED};
+    var currentGun = this.getCurrentGun();
+
+    var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: this.BULLET_SPEED};
 
     var shootState = this.session.shootBullet(bulletData);
     this.socket.emit('shootBullet', shootState);
@@ -265,10 +262,10 @@ GameState.prototype.pullTrigger = function() {
 GameState.prototype.shootBullet = function(session) {
     var x = null;
     var y = null;
-    var angle = session.fireAtAngle.angle;
+    var angle = this.session.fireAtAngle.angle;
     var speed = this.BULLET_SPEED;
 
-    if (this.player.id == session.activePlayer.id) {
+    if (this.player.id == this.session.activePlayer.id) {
         x = this.myGun.x;
         y = this.myGun.y;
     } else {
@@ -276,7 +273,7 @@ GameState.prototype.shootBullet = function(session) {
         y = this.otherGun.y;
     }
 
-    console.log('current player: ' + session.activePlayer.id);
+    console.log('current player: ' + this.session.activePlayer.id);
     console.log('this.player: ' + this.player.id);
     console.log('gun {x: ' + x + ', y: ' + y + ', angle: ' + angle + ', speed: ' + speed + '}')
 
@@ -310,7 +307,8 @@ GameState.prototype.shootBullet = function(session) {
 // The update() method is called every frame
 GameState.prototype.update = function() {
     if (this.game.time.fps !== 0) {
-        var hudText = this.game.time.fps + ' FPS' + ( (this.player) ? '   Player: ' + this.player.name : '');
+        var hudText = this.game.time.fps + ' FPS' + ( (this.session) ? '   State: ' + this.session.statusText() : '');
+
         this.fpsText.setText(hudText);
     }
 
@@ -325,22 +323,26 @@ GameState.prototype.update = function() {
     this.game.physics.arcade.collide(this.bulletPool, this.myGun, function(gun, bullet) {
         gun.damage(10);
         bullet.kill();
-    });
+        this.session.hitPlayer(this.player);
+    }, null, this);
     this.game.physics.arcade.collide(this.bulletPool, this.otherGun, function(gun, bullet) {
         gun.damage(10);
         bullet.kill();
-    });
+        this.session.hitPlayer(this.otherPlayer);
+    }, null, this);
 
     // Check if bullet have collided with the monster
     this.game.physics.arcade.collide(this.bulletPool, this.monster, function(monster, bullet) {
         // Kill the monster
         bullet.kill();
         monster.damage(10);
+        this.session.hitNothing();
     }, null, this);
 
     // Check if bullets have collided with the ground
     this.game.physics.arcade.collide(this.bulletPool, this.ground, function(bullet, ground) {
         // Kill the bullet
+        this.session.hitNothing();
         bullet.kill();
     }, null, this);
 
@@ -350,15 +352,31 @@ GameState.prototype.update = function() {
     }, this);
 
     if (this.initialized) {
-        // Aim the myGun at the pointer.
-        // All this function does is calculate the angle using
-        // Math.atan2(yPointer-ymyGun, xPointer-xmyGun)
-        this.myGun.rotation = this.game.physics.arcade.angleToPointer(this.myGun);
 
-        // Shoot a bullet
-        if (this.game.input.activePointer.isDown) {
-            this.pullTrigger();
+        if (this.session.isReadyForPlayer()) {
+
+            var currentGun = this.getCurrentGun();
+
+            // Aim the myGun at the pointer.
+            // All this function does is calculate the angle using
+            // Math.atan2(yPointer-ymyGun, xPointer-xmyGun)
+            currentGun.rotation = this.game.physics.arcade.angleToPointer(currentGun);
+
+            // Shoot a bullet
+            if (this.game.input.activePointer.isDown) {
+                this.pullTrigger();
+            }
         }
+    }
+};
+
+GameState.prototype.getCurrentGun = function() {
+    if (this.session.activePlayer === this.player) {
+        return this.myGun;
+    } else if (this.session.activePlayer === this.otherPlayer) {
+        return this.otherGun;
+    } else {
+        return null;
     }
 };
 
@@ -414,3 +432,18 @@ GameState.prototype.getExplosion = function(x, y, monster) {
 
 var game = new Phaser.Game(848, 450, Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
+
+function register(elm, func) {
+    var eventType = ('ontouchstart' in window) ? 'touchstart' : 'click';
+    elm.addEventListener(eventType, func, true);
+};
+
+function startLocalGame() {
+    console.log('Start local game');
+    game.state.getCurrentState().initialized = false;
+    game.state.getCurrentState().session = null;
+    game.state.getCurrentState().initGame();
+}
+
+register(document.getElementById('newgamebutton'), startLocalGame);
+

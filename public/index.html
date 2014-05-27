@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
-    <script src="/bower_components/phaser/phaser.js"></script>
-    <script src="/Session.js"></script>
-    <script src="/game.js"></script>
     <link rel="stylesheet" href="/game.css"></link>
   </head>
   <body>
@@ -12,8 +8,14 @@
       <div id="game">
       </div>
       <div id="stat"></div>
-      <div id="controls">
+      <div id="menu">
+        <div class="button" id="newgamebutton">Neues Spiel</div>
       </div>
     </div>
+
+  <script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
+  <script src="/bower_components/phaser/phaser.js"></script>
+  <script src="/Session.js"></script>
+  <script src="/game.js"></script>
   </body>
 </html>
