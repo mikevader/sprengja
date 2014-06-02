@@ -14,7 +14,7 @@ We have some open question on how we wanna work together in the camp 2014. I thi
 * Devices: What devices brings everybody along? It would be great if we have a big assortment :-) The bigger the better!
 * AppStores: Do we have preferences on the AppStores? Or who wants to have a closer look at which AppStore?
 * What beer do we drink? (We should have at least one common goal we can actually achieve ;-))
-* 
+* Remote or just local: Do we want to have remote multiplayer function with server side or do we concentrate on just the client?
 
 
 
