@@ -5,11 +5,7 @@ var GameState = function(game) {
 
 // Load images and sounds
 GameState.prototype.preload = function() {
-    this.game.load.image('cloud', '/assets/gfx/ball.png');
-    this.game.load.image('bullet', '/assets/gfx/bullet.png');
-    this.game.load.image('ground', '/assets/gfx/ground.png');
-    this.game.load.spritesheet('explosion', '/assets/gfx/explosion.png', 128, 128);
-    this.game.load.spritesheet('cyclops', '/assets/gfx/monster.png', 32, 32);
+    Sprengja.Resources.preloadAllImages(game);
 };
 
 // Setup the example
@@ -25,7 +21,7 @@ GameState.prototype.create = function() {
     this.bulletPool = this.game.add.group();
     for(var i = 0; i < Sprengja.Settings.NUMBER_OF_BULLETS; i++) {
         // Create each bullet and add it to the group.
-        var bullet = this.game.add.sprite(0, 0, 'bullet');
+        var bullet = this.game.add.sprite(0, 0, Sprengja.Resources.BULLET);
         this.bulletPool.add(bullet);
 
         // Set its pivot point to the center of the bullet
@@ -47,7 +43,7 @@ GameState.prototype.create = function() {
 
     // Let's make some clouds
     for(var x = -56; x < this.game.width; x += 80) {
-        var cloud = this.game.add.image(x, -80, 'cloud');
+        var cloud = this.game.add.image(x, -80, Sprengja.Resources.CLOUD);
         cloud.scale.setTo(5, 5); // Make the clouds big
         cloud.tint = 0xcccccc; // Make the clouds dark
         cloud.smoothed = false; // Keeps the sprite pixelated
@@ -57,7 +53,7 @@ GameState.prototype.create = function() {
     this.ground = this.game.add.group();
     for(var x = 0; x < this.game.width; x += 32) {
         // Add the ground blocks, enable physics on each, make them immovable
-        var groundBlock = this.game.add.sprite(x, this.game.height - 32, 'ground');
+        var groundBlock = this.game.add.sprite(x, this.game.height - 32, Sprengja.Resources.GROUND);
         this.game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
         groundBlock.body.immovable = true;
         groundBlock.body.allowGravity = false;
@@ -127,7 +123,7 @@ GameState.prototype.initGame = function(session) {
 };
 
 function createGun(gameState, player, color) {
-    var gun = gameState.game.add.sprite(player.x, player.y, 'bullet');
+    var gun = gameState.game.add.sprite(player.x, player.y, Sprengja.Resources.BULLET);
     // Set the pivot point to the center of the myGun
     gun.anchor.setTo(0.5, 0.5);
     gun.tint = color;
@@ -377,7 +373,7 @@ GameState.prototype.getExplosion = function(x, y, monster) {
 
     // If there aren't any available, create a new one
     if (explosion === null) {
-        explosion = game.add.sprite(0, 0, 'explosion');
+        explosion = game.add.sprite(0, 0, Sprengja.Resources.EXPLOSION);
         explosion.anchor.setTo(0.5, 0.5);
 
         // Add an animation for the explosion that kills the sprite when the
