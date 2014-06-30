@@ -144,12 +144,12 @@ var Session = function(session) {
 
 	this.shootBullet = function(bulletData) {
 		if (this.state != SessionState.TRIGGER_DOWN) {
-			console.log('tryed to shoot in the wrong state!!!! current state: ' + this.state);
+			console.log('Tried to shoot in the wrong state!!!! current state: ' + this.state);
 
 			return this.createState('status');
 		}
-		this.state = SessionState.MISSLE_IN_THE_AIR;
 
+        this.state = SessionState.MISSLE_IN_THE_AIR;
 		this.bulletData = bulletData;
 
 		return this.createState('firedShot');
