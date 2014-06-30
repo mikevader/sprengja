@@ -79,6 +79,8 @@ GameState.prototype.create = function() {
     this.fpsText = this.game.add.text(
         20, 20, '', { font: '16px Arial', fill: '#ffffff' }
     );
+    
+    Sprengja.Menu.show();
 };
 
 GameState.prototype.initRemoteGame = function(session) {
@@ -86,6 +88,8 @@ GameState.prototype.initRemoteGame = function(session) {
     var host = location.origin.replace(/^http/, 'ws');
     this.socket = io.connect(host, {transports: ['websocket']})
     this.setEventHandlers();
+    var session = new Session();
+    session.resetPlayerIds();
 
     this.socket.emit('join game', {name: 'undefined', session: new Session()});
 };
@@ -105,12 +109,16 @@ GameState.prototype.initGame = function(session) {
     if (typeof session === 'undefined') {
         console.log('init game local');
         this.session = new Session(session);
+        this.session.remote = false;
         console.log(this.session);
         this.player = this.session.playerA;
         this.otherPlayer = this.session.playerB;
     } else {
         console.log('init game remote');
-        this.player = this.session.playerById([this.session.playerA, this.session.playerB], this.socket.sessionid);
+        this.session = new Session(session);
+        this.session.remote = true;
+        console.log(this.socket);
+        this.player = this.session.playerById(this.socket.socket.sessionid);
         this.otherPlayer = (this.session.playerA == this.player) ? this.session.playerB : this.session.playerA;
     }
 
@@ -191,7 +199,7 @@ function onSocketDisconnect () {
 }
 
 function onShootBullet (session) {
-    console.log('Player shot with angle: ' + session.bulletData);
+    console.log('Player shot with parameters: ' + session.bulletData);
     var gameState = game.state.getCurrentState();
 
     gameState.shootBullet(session);
@@ -248,11 +256,14 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: bulletSpeed};
 
     var shootState = this.session.shootBullet(bulletData);
-    //this.socket.emit('shootBullet', shootState);
+    if (this.socket != null) {
+        this.socket.emit('shootBullet', shootState);
+    }
     this.shootBullet(shootState);
 }
 
 GameState.prototype.shootBullet = function(state) {
+    console.log(state);
     var x = state.bulletData.x;
     var y = state.bulletData.y;
     var angle = state.bulletData.angle;
@@ -338,7 +349,7 @@ GameState.prototype.update = function() {
 
     if (this.initialized) {
 
-        if (this.session.isReadyForPlayer()) {
+        if (this.session.isReadyForPlayer(this.player)) {
 
             var currentGun = this.getCurrentGun();
 
@@ -371,9 +382,9 @@ GameState.prototype.update = function() {
 };
 
 GameState.prototype.getCurrentGun = function() {
-    if (this.session.activePlayer === this.player) {
+    if (this.session.activePlayer.id === this.player.id) {
         return this.myGun;
-    } else if (this.session.activePlayer === this.otherPlayer) {
+    } else if (this.session.activePlayer.id === this.otherPlayer.id) {
         return this.otherGun;
     } else {
         return null;

@@ -38,7 +38,6 @@ function init() {
 		app.use(express.static(path.join(__dirname, 'public')));
 	});
 
-
 	var server = http.createServer(app);
 	connection = io.listen(server);
 
@@ -60,7 +59,6 @@ function init() {
  ********************************/
 var setEventHandlers = function() {
 	connection.sockets.on('connection', onSocketConnection);
-	connection.sockets.on('join game', onPlayerJoinGame);
 };
 
 function createNewSession(room, playerA, playerB) {
@@ -69,12 +67,8 @@ function createNewSession(room, playerA, playerB) {
 	// 					playerB: playerB});
 };
 
-function onPlayerJoinGame(game) {
+function onPlayerJoinGame(socket, game) {
 	util.log('name: ' + game.name + '; session: ' + game.session);
-};
-
-function onSocketConnection (socket) {
-	util.log('New player has connected: ' + socket.id);
 
 	var newPlayer = new Player(socket.id);
 	var roomId;
@@ -90,17 +84,25 @@ function onSocketConnection (socket) {
 		util.log('created new session in room: ' + roomId);
 	} else {
 		createNewSession(roomId, waitingPlayer, newPlayer);
-		waitingPlayer = null;
 		roomId = 'Room_' + sessionCounter;
 		socket.join(roomId)
 		util.log('joined waiting player in room: ' + roomId);
+
+		session.playerA.id = newPlayer.id;
+		session.playerB.id = waitingPlayer.id;
+		waitingPlayer = null;
 
 		socket.to(roomId).emit('game ready', session);
 		socket.to(roomId).broadcast.emit('game ready', session);
 	}
 	socket.room = roomId;
+};
+
+function onSocketConnection (socket) {
+	util.log('New player has connected: ' + socket.id);
 
 	socket.on('disconnect', onClientDisconnect);
+	socket.on('join game', function(game) {onPlayerJoinGame(socket, game)});
 	socket.on('shootBullet', onShootBullet);
 };
 

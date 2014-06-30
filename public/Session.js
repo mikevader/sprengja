@@ -14,7 +14,7 @@ var SessionState = {
 var Session = function(session) {
 	this.state = SessionState.INIT;
 	this.victoriousPlayer = null;
-	var playerA, playerB, activePlayer, finished, fireAtAngle;
+	var playerA, playerB, activePlayer, finished, fireAtAngle, remote;
 
 	console.log('Init: ' + this.state);
 
@@ -48,17 +48,16 @@ var Session = function(session) {
 		this.state = session.state;
 		this.bulletData = session.bulletData;
 		this.victoriousPlayer = session.victoriousPlayer;
+		this.remote = session.remote;
 	} else {
 		createNewGame();
 		this.playerA = playerA;
 		this.playerB = playerB;
 		this.finished = finished;
 		this.activePlayer = activePlayer;
-		this.bulletData = fireAtAngle;
+		this.bulletData = bulletData;
+        this.remote = remote;
 	}
-
-	
-
 
 	this.createState = function(event) {
 		return {
@@ -68,7 +67,8 @@ var Session = function(session) {
 			activePlayer: this.activePlayer,
 			bulletData: this.bulletData,
 			state: this.state,
-			victoriousPlayer: this.victoriousPlayer
+			victoriousPlayer: this.victoriousPlayer,
+			remote: remote
 		};
 	}
 
@@ -78,13 +78,24 @@ var Session = function(session) {
 		return this.createState('init');
 	}
 
+	this.resetPlayerIds = function() {
+		var players = [this.playerA, this.playerB];
+
+	    for (var i = 0; i < players.length; i++) {
+	    	var player = players[i];
+	    	player.id = null;
+	    }
+	}
+
 	this.playerById = function(id) {
-		var players = [this.playerA, playerB];
+		var players = [this.playerA, this.playerB];
 	    console.log('find player by id: ' + id);
 
 	    for (var i = 0; i < players.length; i++) {
-	        console.log('player with index ' + i + ' has id: ' + players[i].id)
+	    	var player = players[i];
+	        console.log('player with index ' + i + ' has id: ' + player.id)
 	        if (players[i].id == id) {
+	        	console.log('found player: ' + players[i]);
 	            return players[i];
 	        }
 	    }
@@ -115,14 +126,20 @@ var Session = function(session) {
 
     this.isReadyForShot = function() {
         return this.state === SessionState.READY_FOR_SHOT;
-    }
+    };
 
     this.isTriggerDown = function() {
         return this.state === SessionState.TRIGGER_DOWN;
-    }
+    };
 
-	this.isReadyForPlayer = function() {
-		return this.isReady() && (this.isReadyForShot() || this.isTriggerDown());
+	this.isReadyForPlayer = function(player) {
+		var readyForPlayerLocal = this.isReady() && (this.isReadyForShot() || this.isTriggerDown());
+        
+        if (this.remote) {
+            return readyForPlayerLocal && this.activePlayer.id == player.id;
+        } else {
+            return readyForPlayerLocal;
+        }
 	};
 
 	this.shootBullet = function(bulletData) {
