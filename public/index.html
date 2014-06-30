@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="/game.css"></link>
+    <link rel="stylesheet" href="/game.css" />
   </head>
   <body>
     <div class="container">
@@ -9,12 +9,14 @@
       </div>
       <div id="stat"></div>
       <div id="menu">
-        <div class="button" id="newgamebutton">Neues Spiel</div>
+        <div class="button" id="newgamebutton">Neues lokales Spiel</div>
+        <div class="button" id="newRemoteGame">Neues remote Spiel</div>
       </div>
     </div>
 
   <script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
   <script src="/bower_components/phaser/phaser.js"></script>
+  <script src="/ScreenDimension.js"></script>
   <script src="/gamesettings.js"></script>
   <script src="/resources.js"></script>
   <script src="/Session.js"></script>

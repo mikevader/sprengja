@@ -16,6 +16,9 @@ var Player = require('./Player').Player;
  * GAME VARIABLES
  ********************************/
 var app, connection, session, players;
+var waitingPlayer;
+var gameSessions;
+var sessionCounter;
 
 
 /********************************
@@ -25,6 +28,9 @@ function init() {
 	//sessions = [];
 	session = new Session();
 	players = [];
+	gameSessions = null;
+	waitingPlayer = null;
+	sessionCounter = 0;
 	var port = Number(process.env.PORT || 5000);
 
 	app = express();
@@ -54,54 +60,44 @@ function init() {
  ********************************/
 var setEventHandlers = function() {
 	connection.sockets.on('connection', onSocketConnection);
+	connection.sockets.on('join game', onPlayerJoinGame);
 };
 
-function onSocketConnection (client) {
-	util.log('New player has connected: ' + client.id);
+function createNewSession(room, playerA, playerB) {
+	gameSessions.push({roomId: room,
+						playerA: playerA,
+						playerB: playerB});
+};
 
-	var newPlayer = new Player(client.id);
+function onSocketConnection (socket) {
+	util.log('New player has connected: ' + socket.id);
 
-	if (session.playerA === 'undefined' || !session.playerA) {
-		util.log('Slot A is free');
-		newPlayer.name = 'A';
-		newPlayer.x = 100;
-		newPlayer.y = 386;
-		newPlayer.visitor = false;
-
-		session.playerA = newPlayer;
-	} else if (session.playerB === 'undefined' || !session.playerB) {
-		util.log('Slot B is free');
-		newPlayer.name = 'B';
-		newPlayer.x = 748;
-		newPlayer.y = 386;
-		newPlayer.angle = -Math.PI;
-		newPlayer.visitor = false;
-
-		session.playerB = newPlayer;
-	} else {
-		util.log('No slot is free. Visitor');
-		newPlayer.name = 'Visitor';
-		newPlayer.visitor = true;
-	}
+	var newPlayer = new Player(socket.id);
+	var roomId;
 
 	// Add new player to the players array
 	players.push(newPlayer);
 
-	client.emit('joined game', newPlayer);
-	util.log('Player ' + newPlayer.name + ' has joined!');
+	if (waitingPlayer === null) {
+		waitingPlayer = newPlayer;
+		roomId = 'Room_' + ++sessionCounter;
+		socket.join(roomId)
+		socket.to(roomId).emit('joined game', {room: roomId});
+		util.log('created new session in room: ' + roomId);
+	} else {
+		createNewSession(roomId, waitingPlayer, newPlayer);
+		waitingPlayer = null;
+		roomId = 'Room_' + sessionCounter;
+		socket.join(roomId)
+		util.log('joined waiting player in room: ' + roomId);
 
-	session.activePlayer = newPlayer;
-	util.log('Active player is: ' + session.activePlayer.name);
+		socket.to(roomId).emit('game ready', session);
+		socket.to(roomId).broadcast.emit('game ready', session);
+	}
+	socket.room = roomId;
 
-	//util.log(session.status().playerA.name);
-
-	if (session.isReady()) {
-		client.emit('game ready', session);
-		client.broadcast.emit('game ready', session);
-	};
-
-	client.on('disconnect', onClientDisconnect);
-	client.on('shootBullet', onShootBullet);
+	socket.on('disconnect', onClientDisconnect);
+	socket.on('shootBullet', onShootBullet);
 };
 
 function onClientDisconnect () {

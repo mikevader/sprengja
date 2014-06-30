@@ -10,12 +10,8 @@ GameState.prototype.preload = function() {
 
 // Setup the example
 GameState.prototype.create = function() {
-    var host = location.origin.replace(/^http/, 'ws');
-    this.socket = io.connect(host, {transports: ['websocket']})
-    this.setEventHandlers();
-
     this.debug = {
-        showTrajectory: true
+        showTrajectory: false
     };
 
     // Set stage background color
@@ -85,6 +81,15 @@ GameState.prototype.create = function() {
     );
 };
 
+GameState.prototype.initRemoteGame = function(session) {
+    console.log('Start remote game');
+    var host = location.origin.replace(/^http/, 'ws');
+    this.socket = io.connect(host, {transports: ['websocket']})
+    this.setEventHandlers();
+
+    socket.emit('join game', {name: 'undefined', session: new Session()});
+};
+
 GameState.prototype.initGame = function(session) {
     if (this.initialized) {
         console.log('game already initialized');
@@ -93,7 +98,7 @@ GameState.prototype.initGame = function(session) {
 
     if (typeof session === 'undefined') {
         console.log('init game local');
-        this.session = new Session();
+        this.session = new Session(session);
         console.log(this.session);
         this.player = this.session.playerA;
         this.otherPlayer = this.session.playerB;
@@ -112,16 +117,6 @@ GameState.prototype.initGame = function(session) {
 
     // Create an object representing our otherGun
     this.otherGun = createGun(this, this.otherPlayer, 0xff0000);
-
-
-    // // Create an object representing our target
-    // this.monster = game.add.sprite(game.width - 200, game.height - 64, 'cyclops');
-    // // Enable physics on the bullet
-    // game.physics.enable(this.monster, Phaser.Physics.ARCADE);
-    // this.monster.body.collideWorldBounds = true;
-    // this.monster.events.onKilled.add(function(monster) {
-    //     this.getExplosion(monster.x, monster.y, monster);
-    // }, this);
 
     this.session.init();
     this.initialized = true;
@@ -155,14 +150,12 @@ GameState.prototype.setEventHandlers = function() {
 };
 
 function onGameReady (session) {
-    // console.log('game is ready')
-    // var gameState = game.state.getCurrentState();
+    console.log('game is ready')
+    var gameState = game.state.getCurrentState();
 
-    // this.session = new Session(session);
+    console.log(session);
 
-    // console.log(session);
-
-    // gameState.initGame(session);
+    gameState.initGame(session);
 }
 
 function onJoinedGame(playerStats) {
@@ -420,8 +413,10 @@ GameState.prototype.getExplosion = function(x, y, monster) {
     return explosion;
 };
 
-var game = new Phaser.Game(848, 450, Phaser.AUTO, 'game');
+var screenDimension = new ScreenDimension();
+var game = new Phaser.Game(screenDimension.width, screenDimension.height, Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
+console.log("Drew new game canvas with dimensions: " + screenDimension.width + " x " + screenDimension.height);
 
 function register(elm, func) {
     var eventType = ('ontouchstart' in window) ? 'touchstart' : 'click';
@@ -435,5 +430,12 @@ function startLocalGame() {
     game.state.getCurrentState().initGame();
 }
 
+function startRemoteGame() {
+    game.state.getCurrentState().initialized = false;
+    game.state.getCurrentState().session = null;
+    game.state.getCurrentState().initRemoteGame();
+}
+
 register(document.getElementById('newgamebutton'), startLocalGame);
+register(document.getElementById('newRemoteGame'), startRemoteGame);
 
