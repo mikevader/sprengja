@@ -128,10 +128,15 @@ var Session = function(session) {
 	};
 
 	this.hitPlayer = function(destroyedPlayer) {
-		if (this.destroyedPlayer == this.playerA) {
+		console.log('current player: ' + this.activePlayer.name);
+		console.log('destroyed player: ' + destroyedPlayer.name);
+
+		if (destroyedPlayer === this.playerA) {
 			this.victoriousPlayer = this.playerB;
-		} else {
+		} else if (destroyedPlayer === this.playerB) {
 			this.victoriousPlayer = this.playerA;
+		} else {
+			this.victoriousPlayer = {name: 'no one'};
 		}
 
 		this.finished = true;
