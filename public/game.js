@@ -264,15 +264,8 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
 
 GameState.prototype.shootBullet = function(state) {
     console.log(state);
-    var x = state.bulletData.x;
-    var y = state.bulletData.y;
-    var angle = state.bulletData.angle;
-    var speed = state.bulletData.speed;
-
     console.log('current player: ' + this.session.activePlayer.id);
     console.log('this.player: ' + this.player.id);
-    console.log('gun {x: ' + x + ', y: ' + y + ', angle: ' + angle + ', speed: ' + speed + '}')
-
 
     // Get a dead bullet from the pool
     var bullet = this.bulletPool.getFirstDead();
@@ -292,12 +285,12 @@ GameState.prototype.shootBullet = function(state) {
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the myGun position.
-    bullet.reset(x, y);
-    bullet.rotation = angle;
+    bullet.reset(state.bulletData.x, state.bulletData.y);
+    bullet.rotation = state.bulletData.angle;
 
     // Shoot it in the right direction
-    bullet.body.velocity.x = Math.cos(bullet.rotation) * speed;
-    bullet.body.velocity.y = Math.sin(bullet.rotation) * speed;
+    bullet.body.velocity.x = Math.cos(bullet.rotation) * state.bulletData.speed;
+    bullet.body.velocity.y = Math.sin(bullet.rotation) * state.bulletData.speed;
 };
 
 // The update() method is called every frame
