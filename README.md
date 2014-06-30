@@ -23,11 +23,12 @@ It is meant to be a mobile device game ... but for now you can play it on (http:
 ### Run the server locally ###
 - Ensure that bower is installed
 - `npm install`
-- `node server.js` or with auto reload `nodemon server.js`
+- `node server.js` or with auto reload `nodemon server.js`  (`npm install -g nodemon`)
 
 ### Libraries ###
 For the visualisation we currently use http://phaser.io
 
+http://gamemechanicexplorer.com
 
 Markdown HowTo:
 [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
