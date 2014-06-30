@@ -18,7 +18,7 @@ We have some open question on how we wanna work together in the camp 2014. I thi
 
 
 ### Where can I get/play it? ###
-It is meant to be a mobile device game ... but for now you can play it on [](http://http://sprengja.herokuapp.com)
+It is meant to be a mobile device game ... but for now you can play it on (http://sprengja.herokuapp.com)
 
 
 Markdown HowTo:
