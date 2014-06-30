@@ -8,27 +8,28 @@ Sprengja.Menu = {
             newServerButton,
             buttons;
         
-        function hide() {
+        function hide(event) {
             var i = 0;
         
             for (i = 0; i < buttons.length; i += 1) {
                 buttons[i].visible = false;
             }
+            event.stop();
         }
         
-        function startNewLocalGame(a, b, c) {
+        function startNewLocalGame(source, event) {
             console.log('Start local game');
             game.state.getCurrentState().initialized = false;
             game.state.getCurrentState().session = null;
             game.state.getCurrentState().initGame();
-            b.stop();
-            hide();
+            hide(event);
         }
     
-        function startNewServerGame() {
+        function startNewServerGame(source, event) {
             game.state.getCurrentState().initialized = false;
             game.state.getCurrentState().session = null;
             game.state.getCurrentState().initRemoteGame();
+            hide(event);
         }
         
         function initButton(resource, callBackFunction, y) {
