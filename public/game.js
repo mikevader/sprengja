@@ -417,8 +417,10 @@ GameState.prototype.getExplosion = function(x, y, monster) {
     return explosion;
 };
 
-var game = new Phaser.Game(848, 450, Phaser.AUTO, 'game');
+var screenDimension = new ScreenDimension();
+var game = new Phaser.Game(screenDimension.width, screenDimension.height, Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
+console.log("Drew new game canvas with dimensions: " + screenDimension.width + " x " + screenDimension.height);
 
 function register(elm, func) {
     var eventType = ('ontouchstart' in window) ? 'touchstart' : 'click';
