@@ -5,21 +5,13 @@ var GameState = function(game) {
 
 // Load images and sounds
 GameState.prototype.preload = function() {
-    this.game.load.image('cloud', '/assets/gfx/ball.png');
-    this.game.load.image('bullet', '/assets/gfx/bullet.png');
-    this.game.load.image('ground', '/assets/gfx/ground.png');
-    this.game.load.spritesheet('explosion', '/assets/gfx/explosion.png', 128, 128);
-    this.game.load.spritesheet('cyclops', '/assets/gfx/monster.png', 32, 32);
+    Sprengja.Resources.preloadAllImages(game);
 };
 
 // Setup the example
 GameState.prototype.create = function() {
-    var host = location.origin.replace(/^http/, 'ws');
-    this.socket = io.connect(host, {transports: ['websocket']})
-    this.setEventHandlers();
-
     this.debug = {
-        showTrajectory: true
+        showTrajectory: false
     };
 
     // Set stage background color
@@ -29,7 +21,7 @@ GameState.prototype.create = function() {
     this.bulletPool = this.game.add.group();
     for(var i = 0; i < Sprengja.Settings.NUMBER_OF_BULLETS; i++) {
         // Create each bullet and add it to the group.
-        var bullet = this.game.add.sprite(0, 0, 'bullet');
+        var bullet = this.game.add.sprite(0, 0, Sprengja.Resources.BULLET);
         this.bulletPool.add(bullet);
 
         // Set its pivot point to the center of the bullet
@@ -51,7 +43,7 @@ GameState.prototype.create = function() {
 
     // Let's make some clouds
     for(var x = -56; x < this.game.width; x += 80) {
-        var cloud = this.game.add.image(x, -80, 'cloud');
+        var cloud = this.game.add.image(x, -80, Sprengja.Resources.CLOUD);
         cloud.scale.setTo(5, 5); // Make the clouds big
         cloud.tint = 0xcccccc; // Make the clouds dark
         cloud.smoothed = false; // Keeps the sprite pixelated
@@ -61,7 +53,7 @@ GameState.prototype.create = function() {
     this.ground = this.game.add.group();
     for(var x = 0; x < this.game.width; x += 32) {
         // Add the ground blocks, enable physics on each, make them immovable
-        var groundBlock = this.game.add.sprite(x, this.game.height - 32, 'ground');
+        var groundBlock = this.game.add.sprite(x, this.game.height - 32, Sprengja.Resources.GROUND);
         this.game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
         groundBlock.body.immovable = true;
         groundBlock.body.allowGravity = false;
@@ -89,6 +81,15 @@ GameState.prototype.create = function() {
     );
 };
 
+GameState.prototype.initRemoteGame = function(session) {
+    console.log('Start remote game');
+    var host = location.origin.replace(/^http/, 'ws');
+    this.socket = io.connect(host, {transports: ['websocket']})
+    this.setEventHandlers();
+
+    this.socket.emit('join game', {name: 'undefined', session: new Session()});
+};
+
 GameState.prototype.initGame = function(session) {
     if (this.initialized) {
         console.log('game already initialized');
@@ -103,7 +104,7 @@ GameState.prototype.initGame = function(session) {
 
     if (typeof session === 'undefined') {
         console.log('init game local');
-        this.session = new Session();
+        this.session = new Session(session);
         console.log(this.session);
         this.player = this.session.playerA;
         this.otherPlayer = this.session.playerB;
@@ -123,16 +124,6 @@ GameState.prototype.initGame = function(session) {
     // Create an object representing our otherGun
     this.otherGun = createGun(this, this.otherPlayer, 0xff0000);
 
-
-    // // Create an object representing our target
-    // this.monster = game.add.sprite(game.width - 200, game.height - 64, 'cyclops');
-    // // Enable physics on the bullet
-    // game.physics.enable(this.monster, Phaser.Physics.ARCADE);
-    // this.monster.body.collideWorldBounds = true;
-    // this.monster.events.onKilled.add(function(monster) {
-    //     this.getExplosion(monster.x, monster.y, monster);
-    // }, this);
-
     this.session.init();
     this.initialized = true;
 };
@@ -141,10 +132,7 @@ function createGun(gameState, player, color) {
     var xPosition = gameState.coordinateModelX.worldToScreen(player.x);
     var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
 
-    console.log("X: " + xPosition + ", Y: " + yPosition);
-
-
-    var gun = gameState.game.add.sprite(xPosition, yPosition, 'bullet');
+    var gun = gameState.game.add.sprite(xPosition, yPosition, Sprengja.Resources.BULLET);
     // Set the pivot point to the center of the myGun
     gun.anchor.setTo(0.5, 0.5);
     gun.tint = color;
@@ -171,14 +159,12 @@ GameState.prototype.setEventHandlers = function() {
 };
 
 function onGameReady (session) {
-    // console.log('game is ready')
-    // var gameState = game.state.getCurrentState();
+    console.log('game is ready')
+    var gameState = game.state.getCurrentState();
 
-    // this.session = new Session(session);
+    console.log(session);
 
-    // console.log(session);
-
-    // gameState.initGame(session);
+    gameState.initGame(session);
 }
 
 function onJoinedGame(playerStats) {
@@ -261,7 +247,7 @@ GameState.prototype.pullTrigger = function() {
     var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: Sprengja.Settings.BULLET_SPEED};
 
     var shootState = this.session.shootBullet(bulletData);
-    this.socket.emit('shootBullet', shootState);
+    //this.socket.emit('shootBullet', shootState);
     this.shootBullet(shootState);
 }
 
@@ -396,7 +382,7 @@ GameState.prototype.getExplosion = function(x, y, monster) {
 
     // If there aren't any available, create a new one
     if (explosion === null) {
-        explosion = game.add.sprite(0, 0, 'explosion');
+        explosion = game.add.sprite(0, 0, Sprengja.Resources.EXPLOSION);
         explosion.anchor.setTo(0.5, 0.5);
 
         // Add an animation for the explosion that kills the sprite when the
@@ -453,5 +439,12 @@ function startLocalGame() {
     game.state.getCurrentState().initGame();
 }
 
+function startRemoteGame() {
+    game.state.getCurrentState().initialized = false;
+    game.state.getCurrentState().session = null;
+    game.state.getCurrentState().initRemoteGame();
+}
+
 register(document.getElementById('newgamebutton'), startLocalGame);
+register(document.getElementById('newRemoteGame'), startRemoteGame);
 
