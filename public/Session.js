@@ -14,7 +14,7 @@ var SessionState = {
 var Session = function(session) {
 	this.state = SessionState.INIT;
 	this.victoriousPlayer = null;
-	var playerA, playerB, activePlayer, finished, fireAtAngle, remote;
+	var playerA, playerB, activePlayer, finished, bulletData, remote;
 
 	console.log('Init: ' + this.state);
 
