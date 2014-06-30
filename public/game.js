@@ -255,7 +255,7 @@ GameState.prototype.shootBullet = function(session) {
     var x = null;
     var y = null;
     var angle = this.session.fireAtAngle.angle;
-    var speed = Sprengja.Settings.BULLET_SPEED;
+    var speed = this.coordinateModelX.worldToScreen(Sprengja.Settings.BULLET_SPEED);
 
     if (this.player.id == this.session.activePlayer.id) {
         x = this.myGun.x;
