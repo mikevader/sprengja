@@ -16,12 +16,12 @@ Sprengja.Menu = {
             }
         }
         
-        function startNewLocalGame() {
+        function startNewLocalGame(a, b, c) {
             console.log('Start local game');
             game.state.getCurrentState().initialized = false;
             game.state.getCurrentState().session = null;
             game.state.getCurrentState().initGame();
-
+            b.stop();
             hide();
         }
     
