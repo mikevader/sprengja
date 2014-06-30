@@ -95,6 +95,12 @@ GameState.prototype.initGame = function(session) {
         return;
     }
 
+    this.coordinateModelX = new CoordinateModel(0, 1);
+    this.coordinateModelX.setScreenSize(this.game.width);
+    this.coordinateModelY = new CoordinateModel(0, 1);
+    this.coordinateModelY.setScreenSize(this.game.height);
+    this.coordinateModelY.setDeviceCoordinatesInverted(true);
+
     if (typeof session === 'undefined') {
         console.log('init game local');
         this.session = new Session();
@@ -132,7 +138,13 @@ GameState.prototype.initGame = function(session) {
 };
 
 function createGun(gameState, player, color) {
-    var gun = gameState.game.add.sprite(player.x, player.y, 'bullet');
+    var xPosition = gameState.coordinateModelX.worldToScreen(player.x);
+    var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
+
+    console.log("X: " + xPosition + ", Y: " + yPosition);
+
+
+    var gun = gameState.game.add.sprite(xPosition, yPosition, 'bullet');
     // Set the pivot point to the center of the myGun
     gun.anchor.setTo(0.5, 0.5);
     gun.tint = color;
