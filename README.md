@@ -22,10 +22,7 @@ It is meant to be a mobile device game ... but for now you can play it on (http:
 
 ### Run the server locally ###
 - `npm install`
-If you want to run the server on your machine just start node:
-`node server.js`
-or with auto reload:
-`nodemon server.js`
+- `node server.js` or with auto reload `nodemon server.js`
 
 ### Libraries ###
 For the visualisation we currently use http://phaser.io
