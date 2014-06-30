@@ -60,13 +60,14 @@ function init() {
  ********************************/
 var setEventHandlers = function() {
 	connection.sockets.on('connection', onSocketConnection);
+	connection.sockets.on('join game', onPlayerJoinGame);
 };
 
 function createNewSession(room, playerA, playerB) {
 	gameSessions.push({roomId: room,
 						playerA: playerA,
 						playerB: playerB});
-}
+};
 
 function onSocketConnection (socket) {
 	util.log('New player has connected: ' + socket.id);
@@ -81,6 +82,7 @@ function onSocketConnection (socket) {
 		waitingPlayer = newPlayer;
 		roomId = 'Room_' + ++sessionCounter;
 		socket.join(roomId)
+		socket.to(roomId).emit('joined game', {room: roomId});
 		util.log('created new session in room: ' + roomId);
 	} else {
 		createNewSession(roomId, waitingPlayer, newPlayer);
@@ -89,7 +91,6 @@ function onSocketConnection (socket) {
 		socket.join(roomId)
 		util.log('joined waiting player in room: ' + roomId);
 
-		socket.to(roomId).emit('joined game', newPlayer);
 		socket.to(roomId).emit('game ready', session);
 		socket.to(roomId).broadcast.emit('game ready', session);
 	}

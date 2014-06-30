@@ -90,6 +90,8 @@ GameState.prototype.initRemoteGame = function(session) {
     var host = location.origin.replace(/^http/, 'ws');
     this.socket = io.connect(host, {transports: ['websocket']})
     this.setEventHandlers();
+
+    socket.emit('join game', {name: 'undefined', session: new Session()});
 };
 
 GameState.prototype.initGame = function(session) {
