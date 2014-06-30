@@ -98,6 +98,12 @@ GameState.prototype.initGame = function(session) {
         return;
     }
 
+    this.coordinateModelX = new CoordinateModel(0, 1);
+    this.coordinateModelX.setScreenSize(this.game.width);
+    this.coordinateModelY = new CoordinateModel(0, 1);
+    this.coordinateModelY.setScreenSize(this.game.height);
+    this.coordinateModelY.setDeviceCoordinatesInverted(true);
+
     if (typeof session === 'undefined') {
         console.log('init game local');
         this.session = new Session(session);
@@ -127,7 +133,10 @@ GameState.prototype.initGame = function(session) {
 };
 
 function createGun(gameState, player, color) {
-    var gun = gameState.game.add.sprite(player.x, player.y, Sprengja.Resources.BULLET);
+    var xPosition = gameState.coordinateModelX.worldToScreen(player.x);
+    var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
+
+    var gun = gameState.game.add.sprite(xPosition, yPosition, Sprengja.Resources.BULLET);
     // Set the pivot point to the center of the myGun
     gun.anchor.setTo(0.5, 0.5);
     gun.tint = color;
@@ -250,7 +259,7 @@ GameState.prototype.shootBullet = function(session) {
     var x = null;
     var y = null;
     var angle = this.session.fireAtAngle.angle;
-    var speed = Sprengja.Settings.BULLET_SPEED;
+    var speed = this.coordinateModelX.worldToScreen(Sprengja.Settings.BULLET_SPEED);
 
     if (this.player.id == this.session.activePlayer.id) {
         x = this.myGun.x;

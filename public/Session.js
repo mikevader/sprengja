@@ -21,8 +21,8 @@ var Session = function(session) {
 		console.log('Slot A is free');
 		playerA = {
 			name: 'A',
-			x: 100,
-			y: 386,
+			x: 0.1,
+			y: 0.1,
 			angle: 0,
 			id: 'id_A'
 		};
@@ -30,8 +30,8 @@ var Session = function(session) {
 		console.log('Slot B is free');
 		playerB = {
 			name: 'B',
-			x: 748,
-			y: 386,
+			x: 0.9,
+			y: 0.1,
 			angle: -Math.PI,
 			id: 'id_B'
 		}
