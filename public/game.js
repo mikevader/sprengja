@@ -109,12 +109,14 @@ GameState.prototype.initGame = function(session) {
     if (typeof session === 'undefined') {
         console.log('init game local');
         this.session = new Session(session);
+        this.session.remote = false;
         console.log(this.session);
         this.player = this.session.playerA;
         this.otherPlayer = this.session.playerB;
     } else {
         console.log('init game remote');
         this.session = new Session(session);
+        this.session.remote = true;
         console.log(this.socket);
         this.player = this.session.playerById(this.socket.socket.sessionid);
         this.otherPlayer = (this.session.playerA == this.player) ? this.session.playerB : this.session.playerA;
@@ -253,14 +255,17 @@ GameState.prototype.pullTrigger = function() {
     var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: Sprengja.Settings.BULLET_SPEED};
 
     var shootState = this.session.shootBullet(bulletData);
-    //this.socket.emit('shootBullet', shootState);
+    if (this.socket != null) {
+        this.socket.emit('shootBullet', shootState);
+    }
     this.shootBullet(shootState);
 }
 
 GameState.prototype.shootBullet = function(session) {
+    console.log(session);
     var x = null;
     var y = null;
-    var angle = this.session.fireAtAngle.angle;
+    var angle = session.fireAtAngle.angle;
     var speed = this.coordinateModelX.worldToScreen(Sprengja.Settings.BULLET_SPEED);
 
     if (this.player.id == this.session.activePlayer.id) {
@@ -351,7 +356,7 @@ GameState.prototype.update = function() {
 
     if (this.initialized) {
 
-        if (this.session.isReadyForPlayer()) {
+        if (this.session.isReadyForPlayer(this.player)) {
 
             var currentGun = this.getCurrentGun();
 
@@ -369,9 +374,9 @@ GameState.prototype.update = function() {
 };
 
 GameState.prototype.getCurrentGun = function() {
-    if (this.session.activePlayer === this.player) {
+    if (this.session.activePlayer.id === this.player.id) {
         return this.myGun;
-    } else if (this.session.activePlayer === this.otherPlayer) {
+    } else if (this.session.activePlayer.id === this.otherPlayer.id) {
         return this.otherGun;
     } else {
         return null;

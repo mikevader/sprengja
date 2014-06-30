@@ -38,7 +38,6 @@ function init() {
 		app.use(express.static(path.join(__dirname, 'public')));
 	});
 
-
 	var server = http.createServer(app);
 	connection = io.listen(server);
 
