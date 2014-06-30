@@ -26,6 +26,9 @@ If you want to run the server on your machine just start node:
 or with auto reload:
 `nodemon server.js`
 
+### Libraries ###
+For the visualisation we currently use http://phaser.io
+
 
 Markdown HowTo:
 [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
