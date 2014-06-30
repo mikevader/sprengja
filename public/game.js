@@ -438,25 +438,3 @@ var screenDimension = new ScreenDimension();
 var game = new Phaser.Game(screenDimension.width, screenDimension.height, Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
 console.log("Drew new game canvas with dimensions: " + screenDimension.width + " x " + screenDimension.height);
-
-function register(elm, func) {
-    var eventType = ('ontouchstart' in window) ? 'touchstart' : 'click';
-    elm.addEventListener(eventType, func, true);
-};
-
-function startLocalGame() {
-    console.log('Start local game');
-    game.state.getCurrentState().initialized = false;
-    game.state.getCurrentState().session = null;
-    game.state.getCurrentState().initGame();
-}
-
-function startRemoteGame() {
-    game.state.getCurrentState().initialized = false;
-    game.state.getCurrentState().session = null;
-    game.state.getCurrentState().initRemoteGame();
-}
-
-register(document.getElementById('newgamebutton'), startLocalGame);
-register(document.getElementById('newRemoteGame'), startRemoteGame);
-
