@@ -21,6 +21,7 @@ We have some open question on how we wanna work together in the camp 2014. I thi
 It is meant to be a mobile device game ... but for now you can play it on (http://sprengja.herokuapp.com)
 
 ### Run the server locally ###
+- `npm install`
 If you want to run the server on your machine just start node:
 `node server.js`
 or with auto reload:
