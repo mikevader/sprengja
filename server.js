@@ -64,9 +64,13 @@ var setEventHandlers = function() {
 };
 
 function createNewSession(room, playerA, playerB) {
-	gameSessions.push({roomId: room,
-						playerA: playerA,
-						playerB: playerB});
+	// gameSessions.push({roomId: room,
+	// 					playerA: playerA,
+	// 					playerB: playerB});
+};
+
+function onPlayerJoinGame(game) {
+	util.log('name: ' + game.name + '; session: ' + game.session);
 };
 
 function onSocketConnection (socket) {
