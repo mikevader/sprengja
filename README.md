@@ -20,6 +20,12 @@ We have some open question on how we wanna work together in the camp 2014. I thi
 ### Where can I get/play it? ###
 It is meant to be a mobile device game ... but for now you can play it on (http://sprengja.herokuapp.com)
 
+### Run the server locally ###
+If you want to run the server on your machine just start node:
+`node server.js`
+or with auto reload:
+`nodemon server.js`
+
 
 Markdown HowTo:
 [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
