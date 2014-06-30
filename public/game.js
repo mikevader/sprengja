@@ -86,6 +86,8 @@ GameState.prototype.initRemoteGame = function(session) {
     var host = location.origin.replace(/^http/, 'ws');
     this.socket = io.connect(host, {transports: ['websocket']})
     this.setEventHandlers();
+    var session = new Session();
+    session.resetPlayerIds();
 
     this.socket.emit('join game', {name: 'undefined', session: new Session()});
 };
@@ -104,7 +106,9 @@ GameState.prototype.initGame = function(session) {
         this.otherPlayer = this.session.playerB;
     } else {
         console.log('init game remote');
-        this.player = this.session.playerById([this.session.playerA, this.session.playerB], this.socket.sessionid);
+        this.session = new Session(session);
+        console.log(this.socket);
+        this.player = this.session.playerById(this.socket.socket.sessionid);
         this.otherPlayer = (this.session.playerA == this.player) ? this.session.playerB : this.session.playerA;
     }
 

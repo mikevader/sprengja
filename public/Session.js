@@ -56,9 +56,6 @@ var Session = function(session) {
 		this.fireAtAngle = fireAtAngle;
 	}
 
-	
-
-
 	this.createState = function(event) {
 		return {
 			event: event,
@@ -77,13 +74,24 @@ var Session = function(session) {
 		return this.createState('init');
 	}
 
+	this.resetPlayerIds = function() {
+		var players = [this.playerA, this.playerB];
+
+	    for (var i = 0; i < players.length; i++) {
+	    	var player = players[i];
+	    	player.id = null;
+	    }
+	}
+
 	this.playerById = function(id) {
-		var players = [this.playerA, playerB];
+		var players = [this.playerA, this.playerB];
 	    console.log('find player by id: ' + id);
 
 	    for (var i = 0; i < players.length; i++) {
-	        console.log('player with index ' + i + ' has id: ' + players[i].id)
+	    	var player = players[i];
+	        console.log('player with index ' + i + ' has id: ' + player.id)
 	        if (players[i].id == id) {
+	        	console.log('found player: ' + players[i]);
 	            return players[i];
 	        }
 	    }
