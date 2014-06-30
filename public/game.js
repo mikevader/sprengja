@@ -238,7 +238,7 @@ GameState.prototype.pullTrigger = function() {
     var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: Sprengja.Settings.BULLET_SPEED};
 
     var shootState = this.session.shootBullet(bulletData);
-    this.socket.emit('shootBullet', shootState);
+    //this.socket.emit('shootBullet', shootState);
     this.shootBullet(shootState);
 }
 
