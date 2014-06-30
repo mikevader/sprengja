@@ -25,15 +25,9 @@ GameState.prototype.create = function() {
     // Set stage background color
     this.game.stage.backgroundColor = 0x4488cc;
 
-    // Define constants
-    this.SHOT_DELAY = 300; // milliseconds (10 bullets/3 seconds)
-    this.BULLET_SPEED = 800; // pixels/second
-    this.NUMBER_OF_BULLETS = 20;
-    this.GRAVITY = 980; // pixels/second/second
-
     // Create an object pool of bullets
     this.bulletPool = this.game.add.group();
-    for(var i = 0; i < this.NUMBER_OF_BULLETS; i++) {
+    for(var i = 0; i < Sprengja.Settings.NUMBER_OF_BULLETS; i++) {
         // Create each bullet and add it to the group.
         var bullet = this.game.add.sprite(0, 0, 'bullet');
         this.bulletPool.add(bullet);
@@ -53,7 +47,7 @@ GameState.prototype.create = function() {
     }
 
     // Turn on gravity
-    game.physics.arcade.gravity.y = this.GRAVITY;
+    game.physics.arcade.gravity.y = Sprengja.Settings.GRAVITY;
 
     // Let's make some clouds
     for(var x = -56; x < this.game.width; x += 80) {
@@ -232,8 +226,8 @@ GameState.prototype.drawTrajectory = function() {
     var theta = -currentGun.rotation;
     var x = 0, y = 0;
     for(var t = 0 + this.timeOffset/(1000*MARCH_SPEED/60); t < 3; t += 0.03) {
-        x = this.BULLET_SPEED * t * Math.cos(theta) * correctionFactor;
-        y = this.BULLET_SPEED * t * Math.sin(theta) * correctionFactor - 0.5 * this.GRAVITY * t * t;
+        x = Sprengja.Settings.BULLET_SPEED * t * Math.cos(theta) * correctionFactor;
+        y = Sprengja.Settings.BULLET_SPEED * t * Math.sin(theta) * correctionFactor - 0.5 * Sprengja.Settings.GRAVITY * t * t;
         this.bitmap.context.fillRect(x + currentGun.x, currentGun.y - y, 3, 3);
         if (y < -15) break;
     }
@@ -247,12 +241,12 @@ GameState.prototype.pullTrigger = function() {
     // the amount of time since the last shot is more than
     // the required delay.
     if (this.lastBulletShotAt === undefined) this.lastBulletShotAt = 0;
-    if (this.game.time.now - this.lastBulletShotAt < this.SHOT_DELAY) return;
+    if (this.game.time.now - this.lastBulletShotAt < Sprengja.Settings.SHOT_DELAY) return;
     this.lastBulletShotAt = this.game.time.now;
 
     var currentGun = this.getCurrentGun();
 
-    var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: this.BULLET_SPEED};
+    var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: Sprengja.Settings.BULLET_SPEED};
 
     var shootState = this.session.shootBullet(bulletData);
     this.socket.emit('shootBullet', shootState);
@@ -263,7 +257,7 @@ GameState.prototype.shootBullet = function(session) {
     var x = null;
     var y = null;
     var angle = this.session.fireAtAngle.angle;
-    var speed = this.BULLET_SPEED;
+    var speed = Sprengja.Settings.BULLET_SPEED;
 
     if (this.player.id == this.session.activePlayer.id) {
         x = this.myGun.x;
