@@ -17,6 +17,18 @@ We have some open question on how we wanna work together in the camp 2014. I thi
 * Remote or just local: Do we want to have remote multiplayer function with server side or do we concentrate on just the client?
 
 
+### Where can I get/play it? ###
+It is meant to be a mobile device game ... but for now you can play it on (http://sprengja.herokuapp.com)
+
+### Run the server locally ###
+- Ensure that bower is installed
+- `npm install`
+- `node server.js` or with auto reload `nodemon server.js`  (`npm install -g nodemon`)
+
+### Libraries ###
+For the visualisation we currently use http://phaser.io
+
+http://gamemechanicexplorer.com
 
 Markdown HowTo:
 [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
