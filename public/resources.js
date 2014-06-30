@@ -9,7 +9,7 @@ Sprengja.Resources = {
     NEW_CLIENT_GAME : '/assets/gfx/newclientgame.png',
     NEW_SERVER_GAME : '/assets/gfx/newservergame.png',
        
-    preloadAllImages : function(game) {
+    preloadAllImages : function (game) {
         
         function preloadImage(url) {
             game.load.image(url, url);
