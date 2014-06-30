@@ -13,7 +13,7 @@ var SessionState = {
 var Session = function(session) {
 	this.state = SessionState.INIT;
 	this.victoriousPlayer = null;
-	var playerA, playerB, activePlayer, finished, fireAtAngle;
+	var playerA, playerB, activePlayer, finished, fireAtAngle, remote;
 
 	console.log('Init: ' + this.state);
 
@@ -47,6 +47,7 @@ var Session = function(session) {
 		this.state = session.state;
 		this.fireAtAngle = session.fireAtAngle;
 		this.victoriousPlayer = session.victoriousPlayer;
+		this.remote = session.remote;
 	} else {
 		createNewGame();
 		this.playerA = playerA;
@@ -54,6 +55,7 @@ var Session = function(session) {
 		this.finished = finished;
 		this.activePlayer = activePlayer;
 		this.fireAtAngle = fireAtAngle;
+		this.remote = remote;
 	}
 
 	this.createState = function(event) {
@@ -64,7 +66,8 @@ var Session = function(session) {
 			activePlayer: this.activePlayer,
 			fireAtAngle: this.fireAtAngle,
 			state: this.state,
-			victoriousPlayer: this.victoriousPlayer
+			victoriousPlayer: this.victoriousPlayer,
+			remote: remote
 		};
 	}
 
@@ -118,7 +121,11 @@ var Session = function(session) {
 		return this.playerA != null && this.playerB != null;
 	};
 
-	this.isReadyForPlayer = function() {
+	this.isReadyForPlayer = function(player) {
+		if (this.remote) {
+			return this.isReady() && this.state === SessionState.READY_FOR_SHOT && this.activePlayer.id == player.id;
+		}
+
 		return this.isReady() && this.state === SessionState.READY_FOR_SHOT;
 	}
 
