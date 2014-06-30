@@ -252,8 +252,11 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
 
     var currentGun = this.getCurrentGun();
 
-    var bulletSpeed = this.coordinateModelX.worldToScreen(Sprengja.Settings.BULLET_SPEED) * bulletSpeedRatio;
-    var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: bulletSpeed};
+    var bulletSpeed = Sprengja.Settings.BULLET_SPEED * bulletSpeedRatio;
+    var x = this.coordinateModelX.screenToWorld(currentGun.x);
+    var y = this.coordinateModelY.screenToWorld(currentGun.y);
+    var angle = currentGun.rotation;
+    var bulletData = {x: x, y: y, angle: angle, speed: bulletSpeed};
 
     var shootState = this.session.shootBullet(bulletData);
     if (this.socket != null) {
@@ -285,12 +288,13 @@ GameState.prototype.shootBullet = function(state) {
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the myGun position.
-    bullet.reset(state.bulletData.x, state.bulletData.y);
+    bullet.reset(this.coordinateModelX.worldToScreen(state.bulletData.x), this.coordinateModelY.worldToScreen(state.bulletData.y));
     bullet.rotation = state.bulletData.angle;
 
     // Shoot it in the right direction
-    bullet.body.velocity.x = Math.cos(bullet.rotation) * state.bulletData.speed;
-    bullet.body.velocity.y = Math.sin(bullet.rotation) * state.bulletData.speed;
+    var speed = this.coordinateModelX.worldToScreen(state.bulletData.speed);
+    bullet.body.velocity.x = Math.cos(bullet.rotation) * speed;
+    bullet.body.velocity.y = Math.sin(bullet.rotation) * speed;
 };
 
 // The update() method is called every frame
