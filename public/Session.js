@@ -6,6 +6,7 @@
 var SessionState = {
 	INIT: 'init',
 	READY_FOR_SHOT: 'shoot',
+    TRIGGER_DOWN: 'tiggerPressed',
 	MISSLE_IN_THE_AIR: 'flying',
 	GAME_OVER: 'targetHit'
 };
@@ -45,7 +46,7 @@ var Session = function(session) {
 		this.finished = session.finished;
 		this.activePlayer = session.activePlayer;
 		this.state = session.state;
-		this.fireAtAngle = session.fireAtAngle;
+		this.bulletData = session.bulletData;
 		this.victoriousPlayer = session.victoriousPlayer;
 	} else {
 		createNewGame();
@@ -53,7 +54,7 @@ var Session = function(session) {
 		this.playerB = playerB;
 		this.finished = finished;
 		this.activePlayer = activePlayer;
-		this.fireAtAngle = fireAtAngle;
+		this.bulletData = fireAtAngle;
 	}
 
 	
@@ -65,7 +66,7 @@ var Session = function(session) {
 			playerA: this.playerA,
 			playerB: this.playerB,
 			activePlayer: this.activePlayer,
-			fireAtAngle: this.fireAtAngle,
+			bulletData: this.bulletData,
 			state: this.state,
 			victoriousPlayer: this.victoriousPlayer
 		};
@@ -96,7 +97,9 @@ var Session = function(session) {
 		if (this.state === SessionState.INIT) {
 			return 'Waiting to start!';
 		} else if (this.state === SessionState.READY_FOR_SHOT) {
-			return this.activePlayer.name + ' shoot!';
+            return this.activePlayer.name + ' shoot!';
+        } else if (this.state === SessionState.TRIGGER_DOWN) {
+            return this.activePlayer.name + ' release trigger to shoot!';
 		} else if (this.state === SessionState.MISSLE_IN_THE_AIR) {
 			return this.activePlayer.name + ' fired. Waiting for impact';
 		} else if (this.state === SessionState.GAME_OVER) {
@@ -110,19 +113,27 @@ var Session = function(session) {
 		return this.playerA != null && this.playerB != null;
 	};
 
-	this.isReadyForPlayer = function() {
-		return this.isReady() && this.state === SessionState.READY_FOR_SHOT;
-	}
+    this.isReadyForShot = function() {
+        return this.state === SessionState.READY_FOR_SHOT;
+    }
 
-	this.shootBullet = function(angle) {
-		if (this.state != SessionState.READY_FOR_SHOT) {
+    this.isTriggerDown = function() {
+        return this.state === SessionState.TRIGGER_DOWN;
+    }
+
+	this.isReadyForPlayer = function() {
+		return this.isReady() && (this.isReadyForShot() || this.isTriggerDown());
+	};
+
+	this.shootBullet = function(bulletData) {
+		if (this.state != SessionState.TRIGGER_DOWN) {
 			console.log('tryed to shoot in the wrong state!!!! current state: ' + this.state);
 
 			return this.createState('status');
 		}
 		this.state = SessionState.MISSLE_IN_THE_AIR;
 
-		this.fireAtAngle = angle;
+		this.bulletData = bulletData;
 
 		return this.createState('firedShot');
 	};
@@ -152,8 +163,7 @@ var Session = function(session) {
 			this.activePlayer = this.playerA;
 		}
 
-		this.fireAtAngle = null;
-
+		this.bulletData = null;
 		this.state = SessionState.READY_FOR_SHOT;
 
 		return this.createState('nextPlayer')

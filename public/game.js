@@ -191,7 +191,7 @@ function onSocketDisconnect () {
 }
 
 function onShootBullet (session) {
-    console.log('Player shot with angle: ' + session.fireAtAngle);
+    console.log('Player shot with angle: ' + session.bulletData);
     var gameState = game.state.getCurrentState();
 
     gameState.shootBullet(session);
@@ -233,7 +233,7 @@ GameState.prototype.drawTrajectory = function() {
     this.bitmap.dirty = true;
 };
 
-GameState.prototype.pullTrigger = function() {
+GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     // Enforce a short delay between shots by recording
     // the time that each bullet is shot and testing if
     // the amount of time since the last shot is more than
@@ -244,26 +244,19 @@ GameState.prototype.pullTrigger = function() {
 
     var currentGun = this.getCurrentGun();
 
-    var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: Sprengja.Settings.BULLET_SPEED};
+    var bulletSpeed = this.coordinateModelX.worldToScreen(Sprengja.Settings.BULLET_SPEED) * bulletSpeedRatio;
+    var bulletData = {x: currentGun.x, y: currentGun.y, angle: currentGun.rotation, speed: bulletSpeed};
 
     var shootState = this.session.shootBullet(bulletData);
     //this.socket.emit('shootBullet', shootState);
     this.shootBullet(shootState);
 }
 
-GameState.prototype.shootBullet = function(session) {
-    var x = null;
-    var y = null;
-    var angle = this.session.fireAtAngle.angle;
-    var speed = this.coordinateModelX.worldToScreen(Sprengja.Settings.BULLET_SPEED);
-
-    if (this.player.id == this.session.activePlayer.id) {
-        x = this.myGun.x;
-        y = this.myGun.y;
-    } else {
-        x = this.otherGun.x;
-        y = this.otherGun.y;
-    }
+GameState.prototype.shootBullet = function(state) {
+    var x = state.bulletData.x;
+    var y = state.bulletData.y;
+    var angle = state.bulletData.angle;
+    var speed = state.bulletData.speed;
 
     console.log('current player: ' + this.session.activePlayer.id);
     console.log('this.player: ' + this.player.id);
@@ -355,8 +348,23 @@ GameState.prototype.update = function() {
             currentGun.rotation = this.game.physics.arcade.angleToPointer(currentGun);
 
             // Shoot a bullet
-            if (this.game.input.activePointer.isDown) {
-                this.pullTrigger();
+            if (this.session.isReadyForShot() && this.game.input.activePointer.isDown) {
+                this.triggerDownTime = this.game.time.now;
+                this.session.state = SessionState.TRIGGER_DOWN;
+            }
+
+            if (this.session.isTriggerDown()) {
+                var downTime = this.game.time.now - this.triggerDownTime;
+                var bulletSpeedRatio = Math.min(1, downTime / Sprengja.Settings.MAX_TRIGGER_DOWNTIME);
+
+                if (this.game.input.activePointer.isDown) {
+                    // Trigger is still down
+                    // TODO nioe: Draw bullet speed ratio on gui
+                } else {
+                    // Player released trigger
+                    this.triggerDownTime = null;
+                    this.pullTrigger(bulletSpeedRatio);
+                }
             }
         }
     }
