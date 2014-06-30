@@ -27,6 +27,7 @@ It is meant to be a mobile device game ... but for now you can play it on (http:
 
 ### Libraries ###
 For the visualisation we currently use http://phaser.io
+
 http://gamemechanicexplorer.com
 
 Markdown HowTo:
