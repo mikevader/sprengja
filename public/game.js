@@ -393,7 +393,7 @@ GameState.prototype.getCurrentGun = function() {
     }
 };
 
-var screenDimension = new ScreenDimension();
-var game = new Phaser.Game(screenDimension.width, screenDimension.height, Phaser.AUTO, 'game');
+var gameDimension = new GameDimension();
+var game = new Phaser.Game(gameDimension.getGameWidth(), gameDimension.getGameHeight(), Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
-console.log("Drew new game canvas with dimensions: " + screenDimension.width + " x " + screenDimension.height);
+console.log("Drew new game canvas with dimensions: " + gameDimension.getGameWidth() + " x " + gameDimension.getGameHeight());
