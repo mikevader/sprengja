@@ -64,9 +64,6 @@ GameState.prototype.create = function() {
 
     // Show FPS
     this.game.time.advancedTiming = true;
-    this.fpsText = this.game.add.text(
-        20, 20, '', { font: '16px Arial', fill: '#ffffff' }
-    );
     
     Sprengja.Menu.show();
 };
@@ -265,8 +262,7 @@ GameState.prototype.rotateGun = function(angle) {
 GameState.prototype.update = function() {
     if (this.game.time.fps !== 0) {
         var hudText = this.game.time.fps + ' FPS' + ( (this.session) ? '   State: ' + this.session.statusText() : '');
-
-        this.fpsText.setText(hudText);
+        Sprengja.Menu.text.setStatusText(hudText);
     }
 
     // this.game.physics.arcade.collide(this.monster, this.ground);

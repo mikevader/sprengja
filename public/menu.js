@@ -6,7 +6,8 @@ Sprengja.Menu = {
     
         var newClientButton,
             newServerButton,
-            buttons;
+            buttons,
+            centeredText;
         
         function hide(event) {
             var i = 0;
@@ -43,5 +44,39 @@ Sprengja.Menu = {
         newClientButton = initButton(Sprengja.Resources.NEW_CLIENT_GAME, startNewLocalGame, game.world.centerY * 0.3);
         newServerButton = initButton(Sprengja.Resources.NEW_SERVER_GAME, startNewServerGame, game.world.centerY);
         buttons = [newClientButton, newServerButton];
-    }
+    },
+    
+    text : (function() {
+        
+        var centeredText,
+            statusText;
+        
+        return {
+            setStatusText : function(text) {
+                if (statusText === undefined) {
+                    statusText = game.add.text(20, 20, '', { font: '16px Arial', fill: '#ffffff' });
+                }
+                statusText.setText(text);
+                statusText.visible = true;
+            },
+            
+            hideStatusText : function() {
+                statusText.visible = false;
+            },
+            
+            setCenteredText : function(text) {
+                if (centeredText === undefined) {
+                    centeredText = game.add.text(game.world.centerX, game.world.centerY, '', { font: '32px Arial', fill: '#ffffff' });
+                }
+                centeredText.setText(text);
+                centeredText.visible = true;
+            },
+
+            hideCenteredText : function() {
+                centeredText.visible = false;
+            }
+        }
+    })() // immediate execution
+    
+   
 };
