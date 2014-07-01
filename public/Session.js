@@ -23,7 +23,7 @@ var Session = function(session) {
 		playerA = {
 			name: 'A',
 			x: 0.1,
-			y: 0.1,
+			y: 0.2,
 			angle: 0,
 			id: 'id_A'
 		};
@@ -32,7 +32,7 @@ var Session = function(session) {
 		playerB = {
 			name: 'B',
 			x: 0.9,
-			y: 0.1,
+			y: 0.2,
 			angle: -Math.PI,
 			id: 'id_B'
 		}

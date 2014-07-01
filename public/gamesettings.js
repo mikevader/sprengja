@@ -6,6 +6,6 @@ Sprengja.Settings = {
     MAX_TRIGGER_DOWNTIME: 1000,
     BULLET_SPEED : 0.7,         // Relative to screen size (pixels/second)
     NUMBER_OF_BULLETS : 20,
-    GRAVITY : 980               // pixels/second/second
+    GRAVITY : 0               // pixels/second/second
     
 };
