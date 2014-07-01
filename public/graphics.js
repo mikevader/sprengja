@@ -19,31 +19,6 @@ Sprengja.Graphics = (function() {
             return explosionPool;
         }
         
-        function createKilledBullet() {
-            
-            var bullet = game.add.sprite(0, 0, Sprengja.Resources.BULLET);
-            bullet.anchor.setTo(0.5, 0.5);
-            bullet.kill();
-            bullet.events.onKilled.add(function(bullet) {
-                Sprengja.Graphics.showExplosionAt(bullet.x, bullet.y);
-            }, this);
-            
-            game.physics.enable(bullet, Phaser.Physics.ARCADE);
-        }
-        
-        function createExplosion() {
-            
-            var explosion = game.add.sprite(0, 0, Sprengja.Resources.EXPLOSION);
-            explosion.anchor.setTo(0.5, 0.5);
-
-            // Add an animation for the explosion that kills the sprite when the
-            // animation is complete
-            var animation = explosion.animations.add('boom', [0,1,2,3], 60, false);
-            animation.killOnComplete = true;
-
-            return explosion;
-        }
-    
         return {
             
             getBullet : function() {
@@ -52,7 +27,7 @@ Sprengja.Graphics = (function() {
                     bullet = bulletPool.getFirstDead();
 
                 if (bullet === null) {
-                    bullet = createKilledBullet();
+                    bullet = Sprengja.GraphicsFactory.createKilledBullet();
                     bulletPool.add(bullet);
                 }
                 
@@ -65,7 +40,7 @@ Sprengja.Graphics = (function() {
                     explosion = explosionPool.getFirstDead();
 
                 if (explosion === null) {
-                    explosion = createExplosion();
+                    explosion = Sprengja.GraphicsFactory.createExplosion();
                     explosionPool.add(explosion);
                 }
                 explosion.tint = 0xffffff;
