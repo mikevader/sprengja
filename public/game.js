@@ -340,7 +340,7 @@ GameState.prototype.getCurrentGun = function() {
     }
 };
 
-var gameDimension = new GameDimension();
+var gameDimension = new Sprengja.GameDimension();
 var game = new Phaser.Game(gameDimension.getGameWidth(), gameDimension.getGameHeight(), Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
 console.log("Drew new game canvas with dimensions: " + gameDimension.getGameWidth() + " x " + gameDimension.getGameHeight());

@@ -1,6 +1,9 @@
-function GameDimension() {
-    var width = getScreenWidth();
-    var height = getScreenHeight();
+/*global game, console */
+var Sprengja = Sprengja || {};
+Sprengja.GameDimension = function () {
+    var width = getScreenWidth(),
+        height = getScreenHeight();
+
     assureLandscape();
     assureAspectRatio();
 
@@ -21,11 +24,13 @@ function GameDimension() {
     }
 
     function assureLandscape() {
+        var temp;
+
         if (width < height) {
             console.log("Screen is in portrait mode -> switch values!");
-            var newWidth = height;
+            temp = height;
             height = width;
-            width = newWidth;
+            width = temp;
         }
     }
 
