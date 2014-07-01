@@ -43,10 +43,7 @@ GameState.prototype.create = function() {
 
     // Let's make some clouds
     for(var x = -56; x < this.game.width; x += 80) {
-        var cloud = this.game.add.image(x, -80, Sprengja.Resources.CLOUD);
-        cloud.scale.setTo(5, 5); // Make the clouds big
-        cloud.tint = 0xcccccc; // Make the clouds dark
-        cloud.smoothed = false; // Keeps the sprite pixelated
+        Sprengja.GraphicsFactory.addCloudAt(x);
     }
 
     // Create some ground
@@ -59,9 +56,6 @@ GameState.prototype.create = function() {
         groundBlock.body.allowGravity = false;
         this.ground.add(groundBlock);
     }
-
-    // Create a group for explosions
-    this.explosionGroup = this.game.add.group();
 
     // Setup a canvas to draw the trajectory on the screen
     this.bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
