@@ -80,7 +80,7 @@ function onPlayerJoinGame(socket, game) {
 		waitingPlayer = newPlayer;
 		roomId = 'Room_' + ++sessionCounter;
 		socket.join(roomId)
-		socket.to(roomId).emit('joined game', {room: roomId});
+		socket.to(roomId).emit('joined game', {room: roomId, playerId: socket.id});
 		util.log('created new session in room: ' + roomId);
 	} else {
 		createNewSession(roomId, waitingPlayer, newPlayer);
@@ -130,8 +130,9 @@ function onClientDisconnect () {
 };
 
 function onShootBullet(data) {
-	util.log('Player shot with angle: ' + data);
+	util.log('Player shot with parameters: ' + data);
 	this.broadcast.emit('shootBullet', data);
+    this.emit('shootBullet', data);
 };
 
 /**************************************************

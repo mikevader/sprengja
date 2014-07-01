@@ -7,5 +7,6 @@ Sprengja.Settings = {
     BULLET_SPEED : 0.7,         // Relative to screen size (pixels/second)
     NUMBER_OF_BULLETS : 20,
     GRAVITY : 980,               // pixels/second/second
-    BACKGROUND_COLOR : 0x4488cc
+    BACKGROUND_COLOR : 0x4488cc,
+    GRAVITY : 0               // pixels/second/second
 };

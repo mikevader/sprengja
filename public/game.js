@@ -16,6 +16,9 @@ GameState.prototype.create = function() {
 
     game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
 
+    this.game.physics.startSystem(Phaser.Physics.P2JS);
+    this.game.physics.p2.setImpactEvents(true);
+
     // Create an object pool of bullets
     this.bulletPool = this.game.add.group();
     for(var i = 0; i < Sprengja.Settings.NUMBER_OF_BULLETS; i++) {
@@ -27,7 +30,8 @@ GameState.prototype.create = function() {
         bullet.anchor.setTo(0.5, 0.5);
 
         // Enable physics on the bullet
-        this.game.physics.enable(bullet, Phaser.Physics.ARCADE);
+        this.game.physics.enable(bullet, true);
+        this.game.physics.p2.enableBody(bullet, true);
 
         // Set its initial state to "dead".
         bullet.kill();
@@ -38,7 +42,7 @@ GameState.prototype.create = function() {
     }
 
     // Turn on gravity
-    game.physics.arcade.gravity.y = Sprengja.Settings.GRAVITY;
+    this.game.physics.p2.gravity.y = Sprengja.Settings.GRAVITY;
 
     // Let's make some clouds
     for(var x = -56; x < this.game.width; x += 80) {
@@ -48,7 +52,11 @@ GameState.prototype.create = function() {
     // Create some ground
     this.ground = this.game.add.group();
     for(var x = 0; x < this.game.width; x += 32) {
-        var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x);
+        // Add the ground blocks, enable physics on each, make them immovable
+        var groundBlock = this.game.add.sprite(x, this.game.height - 32, Sprengja.Resources.GROUND);
+        this.game.physics.enable(groundBlock, true);
+        this.game.physics.p2.enableBody(groundBlock, true);
+        groundBlock.body.static = true;
         this.ground.add(groundBlock);
     }
 
@@ -130,17 +138,17 @@ function createGun(gameState, player, color) {
     var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
 
     var gun = gameState.game.add.sprite(xPosition, yPosition, Sprengja.Resources.BULLET);
+    gameState.game.physics.enable(gun, true);
+    gameState.game.physics.p2.enableBody(gun, true);
     // Set the pivot point to the center of the myGun
     gun.anchor.setTo(0.5, 0.5);
     gun.tint = color;
-    gun.rotation = player.angle;
+    gun.body.rotation = player.angle;
     gun.events.onKilled.add(function(myGun) {
         Sprengja.Graphics.showExplosionAt(x, y);
     }, game);
 
-    gameState.game.physics.enable(gun, Phaser.Physics.ARCADE);
-    gun.body.immovable = true;
-    gun.body.allowGravity = false;
+    gun.body.static = true;
 
     return gun;
 }
@@ -151,7 +159,6 @@ GameState.prototype.setEventHandlers = function() {
     this.socket.on('connect', onSocketConnected);
     this.socket.on('disconnect', onSocketDisconnect);
     this.socket.on('shootBullet', onShootBullet);
-    this.socket.on('joined game', onJoinedGame);
     this.socket.on('game ready', onGameReady);
 };
 
@@ -162,14 +169,6 @@ function onGameReady (session) {
     console.log(session);
 
     gameState.initGame(session);
-}
-
-function onJoinedGame(playerStats) {
-    console.log('joined game as player ' + playerStats.name);
-    console.log('--- with stats: x: ' + playerStats.x + ', y: ' + playerStats.y+ ', angle: ' + playerStats.angle);
-    var gameState = game.state.getCurrentState();
-
-    gameState.player = playerStats;
 }
 
 function onKilledPlayer(session) {
@@ -242,16 +241,19 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     var currentGun = this.getCurrentGun();
 
     var bulletSpeed = Sprengja.Settings.BULLET_SPEED * bulletSpeedRatio;
-    var x = this.coordinateModelX.screenToWorld(currentGun.x);
-    var y = this.coordinateModelY.screenToWorld(currentGun.y);
-    var angle = currentGun.rotation;
+    var x = this.coordinateModelX.screenToWorld(currentGun.body.x);
+    var y = this.coordinateModelY.screenToWorld(currentGun.body.y);
+    var angle = currentGun.body.rotation;
     var bulletData = {x: x, y: y, angle: angle, speed: bulletSpeed};
+
+    console.log(bulletData);
 
     var shootState = this.session.shootBullet(bulletData);
     if (this.socket != null) {
         this.socket.emit('shootBullet', shootState);
+    } else {
+        this.shootBullet(shootState);
     }
-    this.shootBullet(shootState);
 }
 
 GameState.prototype.shootBullet = function(state) {
@@ -273,17 +275,17 @@ GameState.prototype.shootBullet = function(state) {
     // Phaser takes care of this for me by setting this flag
     // but you can do it yourself by killing the bullet if
     // its x,y coordinates are outside of the world.
-    bullet.checkWorldBounds = true;
+    bullet.body.collideWorldBounds = true;
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the myGun position.
     bullet.reset(this.coordinateModelX.worldToScreen(state.bulletData.x), this.coordinateModelY.worldToScreen(state.bulletData.y));
-    bullet.rotation = state.bulletData.angle;
+    bullet.body.rotation = state.bulletData.angle;
 
     // Shoot it in the right direction
     var speed = this.coordinateModelX.worldToScreen(state.bulletData.speed);
-    bullet.body.velocity.x = Math.cos(bullet.rotation) * speed;
-    bullet.body.velocity.y = Math.sin(bullet.rotation) * speed;
+    bullet.body.velocity.x = Math.cos(bullet.body.rotation) * speed;
+    bullet.body.velocity.y = Math.sin(bullet.body.rotation) * speed;
 };
 
 // The update() method is called every frame
@@ -299,23 +301,34 @@ GameState.prototype.update = function() {
         this.drawTrajectory();
     }
 
-    this.game.physics.arcade.collide(this.bulletPool, this.myGun, function(gun, bullet) {
-        gun.damage(10);
-        bullet.kill();
-        this.session.hitPlayer(this.player);
-    }, null, this);
-    this.game.physics.arcade.collide(this.bulletPool, this.otherGun, function(gun, bullet) {
-        gun.damage(10);
-        bullet.kill();
-        this.session.hitPlayer(this.otherPlayer);
-    }, null, this);
-    
-    // Check if bullets have collided with the ground
-    this.game.physics.arcade.collide(this.bulletPool, this.ground, function(bullet, ground) {
-        // Kill the bullet
-        this.session.hitNothing();
-        bullet.kill();
-    }, null, this);
+    // this.game.physics.arcade.collide(this.monster, this.ground);
+
+
+    // this.game.physics.arcade.collide(this.bulletPool, this.myGun, function(gun, bullet) {
+    //     gun.damage(10);
+    //     bullet.kill();
+    //     this.session.hitPlayer(this.player);
+    // }, null, this);
+    // this.game.physics.arcade.collide(this.bulletPool, this.otherGun, function(gun, bullet) {
+    //     gun.damage(10);
+    //     bullet.kill();
+    //     this.session.hitPlayer(this.otherPlayer);
+    // }, null, this);
+
+    // // Check if bullet have collided with the monster
+    // this.game.physics.arcade.collide(this.bulletPool, this.monster, function(monster, bullet) {
+    //     // Kill the monster
+    //     bullet.kill();
+    //     monster.damage(10);
+    //     this.session.hitNothing();
+    // }, null, this);
+
+    // // Check if bullets have collided with the ground
+    // this.game.physics.arcade.collide(this.bulletPool, this.ground, function(bullet, ground) {
+    //     // Kill the bullet
+    //     this.session.hitNothing();
+    //     bullet.kill();
+    // }, null, this);
 
     // Rotate all living bullets to match their trajectory
     this.bulletPool.forEachAlive(function(bullet) {
@@ -331,7 +344,7 @@ GameState.prototype.update = function() {
             // Aim the myGun at the pointer.
             // All this function does is calculate the angle using
             // Math.atan2(yPointer-ymyGun, xPointer-xmyGun)
-            currentGun.rotation = this.game.physics.arcade.angleToPointer(currentGun);
+            currentGun.body.rotation = this.game.physics.arcade.angleToPointer(currentGun);
 
             // Shoot a bullet
             if (this.session.isReadyForShot() && this.game.input.activePointer.isDown) {
