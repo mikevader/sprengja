@@ -57,12 +57,6 @@ GameState.prototype.create = function() {
         this.ground.add(groundBlock);
     }
 
-    // Setup a canvas to draw the trajectory on the screen
-    this.bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
-    this.bitmap.context.fillStyle = 'rgb(255, 255, 255)';
-    this.bitmap.context.strokeStyle = 'rgb(255, 255, 255)';
-    this.game.add.image(0, 0, this.bitmap);
-
     // Simulate a pointer click/tap input at the center of the stage
     // when the example begins running.
     this.game.input.activePointer.x = this.game.width/2;
