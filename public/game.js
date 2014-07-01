@@ -25,14 +25,14 @@ GameState.prototype.create = function() {
     for(var i = 0; i < Sprengja.Settings.NUMBER_OF_BULLETS; i++) {
         // Create each bullet and add it to the group.
         var bullet = this.game.add.sprite(0, 0, Sprengja.Resources.BULLET);
-        this.bulletPool.add(bullet);
-
         // Set its pivot point to the center of the bullet
         bullet.anchor.setTo(0.5, 0.5);
+        this.game.physics.p2.enable(bullet, true);
+        this.game.physics.p2.enableBody(bullet, true);
+        this.bulletPool.add(bullet);
+
 
         // Enable physics on the bullet
-        this.game.physics.enable(bullet, true);
-        this.game.physics.p2.enableBody(bullet, true);
 
         // Set its initial state to "dead".
         bullet.kill();
@@ -139,10 +139,10 @@ function createGun(gameState, player, color) {
     var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
 
     var gun = gameState.game.add.sprite(xPosition, yPosition, Sprengja.Resources.BULLET);
-    gameState.game.physics.enable(gun, true);
-    gameState.game.physics.p2.enableBody(gun, true);
     // Set the pivot point to the center of the myGun
     gun.anchor.setTo(0.5, 0.5);
+    gameState.game.physics.enable(gun, true);
+    gameState.game.physics.p2.enableBody(gun, true);
     gun.tint = color;
     gun.body.rotation = player.angle;
     gun.events.onKilled.add(function(myGun) {
