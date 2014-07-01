@@ -320,8 +320,10 @@ GameState.prototype.update = function() {
                 if (this.game.input.activePointer.isDown) {
                     // Trigger is still down
                     // TODO nioe: Draw bullet speed ratio on gui
+                    Sprengja.Menu.text.setCenteredText(Math.floor(bulletSpeedRatio * 100) + '%');
                 } else {
                     // Player released trigger
+                    Sprengja.Menu.text.hideCenteredText();
                     this.triggerDownTime = null;
                     this.pullTrigger(bulletSpeedRatio);
                 }
