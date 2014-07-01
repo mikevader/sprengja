@@ -5,8 +5,9 @@ Sprengja.GraphicsFactory = {
     createKilledBullet : function() {
             
         var bullet = game.add.sprite(0, 0, Sprengja.Resources.BULLET);
-        bullet.anchor.setTo(0.5, 0.5);
-        game.physics.p2.enable(bullet, true);
+        // bullet.anchor.setTo(0.5, 0.5);
+        // game.physics.p2.enable(bullet, true);
+        game.physics.enable(bullet, Phaser.Physics.P2JS, false);
         bullet.kill();
         bullet.events.onKilled.add(function(bullet) {
             Sprengja.Graphics.showExplosionAt(bullet.x, bullet.y);
@@ -38,8 +39,9 @@ Sprengja.GraphicsFactory = {
         
         // Add the ground blocks, enable physics on each, make them immovable
         var groundBlock = game.add.sprite(x, game.height - 32, Sprengja.Resources.GROUND);
-        game.physics.p2.enable(groundBlock, true);
-        game.physics.p2.enableBody(groundBlock, true);
+        game.physics.enable(groundBlock, Phaser.Physics.P2JS, false);
+        // game.physics.p2.enable(groundBlock, true);
+        // game.physics.p2.enableBody(groundBlock, true);
         groundBlock.body.immovable = true;
         groundBlock.body.allowGravity = false;
         groundBlock.body.static = true;
