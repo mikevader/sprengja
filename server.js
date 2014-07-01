@@ -130,8 +130,9 @@ function onClientDisconnect () {
 };
 
 function onShootBullet(data) {
-	util.log('Player shot with angle: ' + data);
+	util.log('Player shot with parameters: ' + data);
 	this.broadcast.emit('shootBullet', data);
+    this.emit('shootBullet', data);
 };
 
 /**************************************************

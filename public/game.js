@@ -261,8 +261,9 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     var shootState = this.session.shootBullet(bulletData);
     if (this.socket != null) {
         this.socket.emit('shootBullet', shootState);
+    } else {
+        this.shootBullet(shootState);
     }
-    this.shootBullet(shootState);
 }
 
 GameState.prototype.shootBullet = function(state) {
