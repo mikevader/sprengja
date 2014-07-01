@@ -32,5 +32,15 @@ Sprengja.GraphicsFactory = {
         cloud.scale.setTo(5, 5); // Make the clouds big
         cloud.tint = 0xcccccc; // Make the clouds dark
         cloud.smoothed = false; // Keeps the sprite pixelated
+    },
+    
+    createGroundBlockAt : function(x) {
+        
+        // Add the ground blocks, enable physics on each, make them immovable
+        var groundBlock = game.add.sprite(x, game.height - 32, Sprengja.Resources.GROUND);
+        game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
+        groundBlock.body.immovable = true;
+        groundBlock.body.allowGravity = false;
+        return groundBlock;
     }
 }

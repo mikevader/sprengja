@@ -49,11 +49,7 @@ GameState.prototype.create = function() {
     // Create some ground
     this.ground = this.game.add.group();
     for(var x = 0; x < this.game.width; x += 32) {
-        // Add the ground blocks, enable physics on each, make them immovable
-        var groundBlock = this.game.add.sprite(x, this.game.height - 32, Sprengja.Resources.GROUND);
-        this.game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
-        groundBlock.body.immovable = true;
-        groundBlock.body.allowGravity = false;
+        var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x);
         this.ground.add(groundBlock);
     }
 
