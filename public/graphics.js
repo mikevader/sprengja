@@ -1,7 +1,5 @@
 var Sprengja = Sprengja || {};
 
-
-
 Sprengja.Graphics = (function() {
     
     var bulletPool,
