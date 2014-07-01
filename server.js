@@ -104,6 +104,7 @@ function onSocketConnection (socket) {
 	socket.on('disconnect', onClientDisconnect);
 	socket.on('join game', function(game) {onPlayerJoinGame(socket, game)});
 	socket.on('shootBullet', onShootBullet);
+    socket.on('rotateGun', onGunRotation);
 };
 
 function onClientDisconnect () {
@@ -134,6 +135,11 @@ function onShootBullet(data) {
 	this.broadcast.emit('shootBullet', data);
     this.emit('shootBullet', data);
 };
+
+function onGunRotation(angle) {
+    this.broadcast.emit('rotateGun', angle);
+    this.emit('rotateGun', angle);
+}
 
 /**************************************************
 ** GAME HELPER FUNCTIONS

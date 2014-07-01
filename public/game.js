@@ -154,6 +154,7 @@ GameState.prototype.setEventHandlers = function() {
     this.socket.on('shootBullet', onShootBullet);
     this.socket.on('joined game', onJoinedGame);
     this.socket.on('game ready', onGameReady);
+    this.socket.on('rotateGun', onRotateGun);
 };
 
 function onGameReady (session) {
@@ -180,19 +181,24 @@ function onKilledPlayer(session) {
 
 }
 
-function onSocketConnected () {
+function onSocketConnected() {
     console.log('Connected to socket server');
 }
 
-function onSocketDisconnect () {
+function onSocketDisconnect() {
     console.log('Disconnected from socket server');
 }
 
-function onShootBullet (session) {
+function onShootBullet(session) {
     console.log('Player shot with parameters: ' + session.bulletData);
     var gameState = game.state.getCurrentState();
 
     gameState.shootBullet(session);
+}
+
+function onRotateGun(angle) {
+    var gameState = game.state.getCurrentState();
+    gameState.rotateGun(angle);
 }
 
 
@@ -256,8 +262,8 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     }
 }
 
-GameState.prototype.shootBullet = function(state) {
-    console.log(state);
+GameState.prototype.shootBullet = function(shootState) {
+    console.log(shootState);
     console.log('current player: ' + this.session.activePlayer.id);
     console.log('this.player: ' + this.player.id);
 
@@ -279,14 +285,26 @@ GameState.prototype.shootBullet = function(state) {
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the myGun position.
-    bullet.reset(this.coordinateModelX.worldToScreen(state.bulletData.x), this.coordinateModelY.worldToScreen(state.bulletData.y));
-    bullet.rotation = state.bulletData.angle;
+    bullet.reset(this.coordinateModelX.worldToScreen(shootState.bulletData.x), this.coordinateModelY.worldToScreen(shootState.bulletData.y));
+    bullet.rotation = shootState.bulletData.angle;
 
     // Shoot it in the right direction
-    var speed = this.coordinateModelX.worldToScreen(state.bulletData.speed);
+    var speed = this.coordinateModelX.worldToScreen(shootState.bulletData.speed);
     bullet.body.velocity.x = Math.cos(bullet.rotation) * speed;
     bullet.body.velocity.y = Math.sin(bullet.rotation) * speed;
 };
+
+GameState.prototype.triggerGunRotation = function(angle) {
+    if (this.socket != null) {
+        this.socket.emit('rotateGun', angle);
+    } else {
+        this.rotateGun(angle);
+    }
+}
+
+GameState.prototype.rotateGun = function(angle) {
+    this.getCurrentGun().rotation = angle;
+}
 
 // The update() method is called every frame
 GameState.prototype.update = function() {
@@ -338,13 +356,10 @@ GameState.prototype.update = function() {
     if (this.initialized) {
 
         if (this.session.isReadyForPlayer(this.player)) {
-
-            var currentGun = this.getCurrentGun();
-
             // Aim the myGun at the pointer.
             // All this function does is calculate the angle using
             // Math.atan2(yPointer-ymyGun, xPointer-xmyGun)
-            currentGun.rotation = this.game.physics.arcade.angleToPointer(currentGun);
+            this.triggerGunRotation(this.game.physics.arcade.angleToPointer(this.getCurrentGun()));
 
             // Shoot a bullet
             if (this.session.isReadyForShot() && this.game.input.activePointer.isDown) {
