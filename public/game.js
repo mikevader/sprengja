@@ -14,8 +14,7 @@ GameState.prototype.create = function() {
         showTrajectory: false
     };
 
-    // Set stage background color
-    this.game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
+    game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
 
     // Create an object pool of bullets
     this.bulletPool = this.game.add.group();
@@ -300,9 +299,6 @@ GameState.prototype.update = function() {
         this.drawTrajectory();
     }
 
-    this.game.physics.arcade.collide(this.monster, this.ground);
-
-
     this.game.physics.arcade.collide(this.bulletPool, this.myGun, function(gun, bullet) {
         gun.damage(10);
         bullet.kill();
@@ -313,15 +309,7 @@ GameState.prototype.update = function() {
         bullet.kill();
         this.session.hitPlayer(this.otherPlayer);
     }, null, this);
-
-    // Check if bullet have collided with the monster
-    this.game.physics.arcade.collide(this.bulletPool, this.monster, function(monster, bullet) {
-        // Kill the monster
-        bullet.kill();
-        monster.damage(10);
-        this.session.hitNothing();
-    }, null, this);
-
+    
     // Check if bullets have collided with the ground
     this.game.physics.arcade.collide(this.bulletPool, this.ground, function(bullet, ground) {
         // Kill the bullet
