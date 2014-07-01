@@ -34,7 +34,7 @@ GameState.prototype.create = function() {
         bullet.kill();
 
         bullet.events.onKilled.add(function(bullet1) {
-            this.getExplosion(bullet1.x, bullet1.y);
+            Sprengja.Graphics.showExplosionAt(bullet1.x, bullet1.y);
         }, this);
     }
 
@@ -43,25 +43,15 @@ GameState.prototype.create = function() {
 
     // Let's make some clouds
     for(var x = -56; x < this.game.width; x += 80) {
-        var cloud = this.game.add.image(x, -80, Sprengja.Resources.CLOUD);
-        cloud.scale.setTo(5, 5); // Make the clouds big
-        cloud.tint = 0xcccccc; // Make the clouds dark
-        cloud.smoothed = false; // Keeps the sprite pixelated
+        Sprengja.GraphicsFactory.addCloudAt(x);
     }
 
     // Create some ground
     this.ground = this.game.add.group();
     for(var x = 0; x < this.game.width; x += 32) {
-        // Add the ground blocks, enable physics on each, make them immovable
-        var groundBlock = this.game.add.sprite(x, this.game.height - 32, Sprengja.Resources.GROUND);
-        this.game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
-        groundBlock.body.immovable = true;
-        groundBlock.body.allowGravity = false;
+        var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x);
         this.ground.add(groundBlock);
     }
-
-    // Create a group for explosions
-    this.explosionGroup = this.game.add.group();
 
     // Setup a canvas to draw the trajectory on the screen
     this.bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
@@ -146,7 +136,7 @@ function createGun(gameState, player, color) {
     gun.tint = color;
     gun.rotation = player.angle;
     gun.events.onKilled.add(function(myGun) {
-        gameState.getExplosion(myGun.x, myGun.y, myGun);
+        Sprengja.Graphics.showExplosionAt(x, y);
     }, game);
 
     gameState.game.physics.enable(gun, Phaser.Physics.ARCADE);
@@ -387,56 +377,6 @@ GameState.prototype.getCurrentGun = function() {
     } else {
         return null;
     }
-};
-
-// Try to get a used explosion from the explosionGroup.
-// If an explosion isn't available, create a new one and add it to the group.
-// Setup new explosions so that they animate and kill themselves when the
-// animation is complete.
-GameState.prototype.getExplosion = function(x, y, monster) {
-    // Get the first dead explosion from the explosionGroup
-    var explosion = this.explosionGroup.getFirstDead();
-
-    // If there aren't any available, create a new one
-    if (explosion === null) {
-        explosion = game.add.sprite(0, 0, Sprengja.Resources.EXPLOSION);
-        explosion.anchor.setTo(0.5, 0.5);
-
-        // Add an animation for the explosion that kills the sprite when the
-        // animation is complete
-        var animation = explosion.animations.add('boom', [0,1,2,3], 60, false);
-        animation.killOnComplete = true;
-
-        // Add the explosion sprite to the group
-        this.explosionGroup.add(explosion);
-    }
-
-    console.log('the monster is ' + (monster != null));
-
-    if (monster != null) {
-        explosion.tint = 0xff0000;
-    } else {
-        explosion.tint = 0xffffff;
-    }
-
-
-    // Revive the explosion (set it's alive property to true)
-    // You can also define a onRevived event handler in your explosion objects
-    // to do stuff when they are revived.
-    explosion.revive();
-
-    // Move the explosion to the given coordinates
-    explosion.x = x;
-    explosion.y = y;
-
-    // Set rotation of the explosion at random for a little variety
-    explosion.angle = game.rnd.integerInRange(0, 360);
-
-    // Play the animation
-    explosion.animations.play('boom');
-
-    // Return the explosion itself in case we want to do anything else with it
-    return explosion;
 };
 
 var screenDimension = new ScreenDimension();
