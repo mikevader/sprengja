@@ -3,6 +3,24 @@ body {
     padding: 0px;
 }
 
+div.container {
+    display: table;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: black;
+    text-align: center;
+}
+
+#game {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+#game canvas {
+    margin: auto;
+}
+
 #menu .button {
 	background-color: #dddddd;
 	font-size: 1em;
