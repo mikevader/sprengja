@@ -1,6 +1,6 @@
 'use strict';
 
-var GameState = function(game) {
+var GameState = function() {
 };
 
 // Load images and sounds
@@ -15,7 +15,7 @@ GameState.prototype.create = function() {
     };
 
     // Set stage background color
-    this.game.stage.backgroundColor = 0x4488cc;
+    this.game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
 
     // Create an object pool of bullets
     this.bulletPool = this.game.add.group();
