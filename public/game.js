@@ -10,9 +10,6 @@ GameState.prototype.preload = function() {
 
 // Setup the example
 GameState.prototype.create = function() {
-    this.debug = {
-        showTrajectory: false
-    };
 
     game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
 
@@ -199,41 +196,6 @@ function onRotateGun(angle) {
     gameState.rotateGun(angle);
 }
 
-GameState.prototype.drawTrajectory = function() {
-    // Clear the bitmap
-    this.bitmap.context.clearRect(0, 0, this.game.width, this.game.height);
-
-    // Set fill style to white
-    this.bitmap.context.fillStyle = 'rgba(255, 255, 255, 0.5)';
-
-    // Calculate a time offset. This offset is used to alter the starting
-    // time of the draw loop so that the dots are offset a little bit each
-    // frame. It gives the trajectory a "marching ants" style animation.
-    var MARCH_SPEED = 40; // Smaller is faster
-    this.timeOffset = this.timeOffset + 1 || 0;
-    this.timeOffset = this.timeOffset % MARCH_SPEED;
-
-    // Just a variable to make the trajectory match the actual track a little better.
-    // The mismatch is probably due to rounding or the physics engine making approximations.
-    var correctionFactor = 0.99;
-
-    // Draw the trajectory
-    // http://en.wikipedia.org/wiki/Trajectory_of_a_projectile#Angle_required_to_hit_coordinate_.28x.2Cy.29
-
-    var currentGun = this.getCurrentGun();
-
-    var theta = -currentGun.rotation;
-    var x = 0, y = 0;
-    for(var t = 0 + this.timeOffset/(1000*MARCH_SPEED/60); t < 3; t += 0.03) {
-        x = Sprengja.Settings.BULLET_SPEED * t * Math.cos(theta) * correctionFactor;
-        y = Sprengja.Settings.BULLET_SPEED * t * Math.sin(theta) * correctionFactor - 0.5 * Sprengja.Settings.GRAVITY * t * t;
-        this.bitmap.context.fillRect(x + currentGun.x, currentGun.y - y, 3, 3);
-        if (y < -15) break;
-    }
-
-    this.bitmap.dirty = true;
-};
-
 GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     // Enforce a short delay between shots by recording
     // the time that each bullet is shot and testing if
@@ -311,11 +273,6 @@ GameState.prototype.update = function() {
         var hudText = this.game.time.fps + ' FPS' + ( (this.session) ? '   State: ' + this.session.statusText() : '');
 
         this.fpsText.setText(hudText);
-    }
-
-    // Draw the trajectory every frame
-    if (this.initialized && this.debug.showTrajectory) {
-        this.drawTrajectory();
     }
 
     // this.game.physics.arcade.collide(this.monster, this.ground);
