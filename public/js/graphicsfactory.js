@@ -52,7 +52,11 @@ Sprengja.GraphicsFactory = {
             Sprengja.Graphics.showExplosionAt(myGun.x, myGun.y);
         }, game);
 
-        gun.body.static = true;
+        gun.body.static = false;
+        gun.body.fixedRotation  = true;
+        
+        gun.body.setRectangle(64, 64);
+        gun.body.mass = 5000;
         
         return gun;
     }

@@ -15,12 +15,24 @@ GameState.prototype.create = function () {
     this.game.physics.startSystem(Phaser.Physics.P2JS);
     this.game.physics.p2.restitution = 0.9;
     this.game.physics.p2.setImpactEvents(true);
+    
+    
+    // might be interessting to use
+    // game.physics.p2.setPostBroadphaseCallback(checkPossibleColl, this);
+    this.bulletsCollisionGroup = game.physics.p2.createCollisionGroup();
+    this.gunCollisionGroup = game.physics.p2.createCollisionGroup();
+    this.groundCollisionGroup = game.physics.p2.createCollisionGroup();
+    
+    game.physics.p2.updateBoundsCollisionGroup();
 
     // Create an object pool of bullets
     this.bulletPool = this.game.add.group();
     for(var i = 0; i < Sprengja.Settings.NUMBER_OF_BULLETS; i++) {
         // Create each bullet and add it to the group.
         var bullet = Sprengja.GraphicsFactory.createKilledBullet();
+        bullet.body.setCollisionGroup(this.bulletsCollisionGroup);
+        bullet.body.collides(this.gunCollisionGroup,hitMyGun,this);
+        bullet.body.collides(this.groundCollisionGroup,hitGround,this);
         this.bulletPool.add(bullet);
     }
 
@@ -32,7 +44,7 @@ GameState.prototype.create = function () {
         Sprengja.GraphicsFactory.addCloudAt(x);
     }
     
-    var terrainContour = this.terrain(this.game.width,this.game.height,this.game.height/4,0.62);
+    var terrainContour = this.terrain(this.game.width,this.game.height,this.game.height/7,0.62);
     this.drawTerrainCountour(terrainContour,Sprengja.Settings.DEBUG);
 
     // Create some ground
@@ -41,6 +53,8 @@ GameState.prototype.create = function () {
         var terrainBoundY = terrainContour[x];       
         for(var y = this.game.height - 2;y > terrainBoundY; y -= 4){
             var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
+            groundBlock.body.setCollisionGroup(this.groundCollisionGroup);      
+            groundBlock.body.collides([this.gunCollisionGroup,this.bulletsCollisionGroup]);
             this.ground.add(groundBlock);
         }
     }
@@ -80,9 +94,9 @@ GameState.prototype.terrain = function(width, height, displace, roughness) {
         
 
     // Set the initial left point
-    points[0] = (height - height / 4) + (Math.random() * displace * 2) - displace;
+    points[0] = (height - height / 6) + (Math.random() * displace * 2) - displace;
     // set the initial right point
-    points[power] = (height - height / 4) + (Math.random() * displace * 2) - displace;
+    points[power] = (height - height / 6) + (Math.random() * displace * 2) - displace;
     console.log(power);
     displace *= roughness;
 
@@ -136,10 +150,10 @@ GameState.prototype.initGame = function(session) {
 
     // Create an object representing our myGun
     this.myGun = createGun(this, this.player);
-
+  
     // Create an object representing our otherGun
     this.otherGun = createGun(this, this.otherPlayer);
-
+   
     this.session.init();
     this.initialized = true;
 };
@@ -149,7 +163,9 @@ function createGun(gameState, player) {
     var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
 
     var gun = Sprengja.GraphicsFactory.createGunAt(xPosition, yPosition, player);
-
+    gun.body.setCollisionGroup(gameState.gunCollisionGroup);
+    gun.body.collides(gameState.bulletsCollisionGroup);
+    gun.body.collides(gameState.groundCollisionGroup, gunHitGround, gameState);
     return gun;
 };
 
@@ -239,10 +255,7 @@ GameState.prototype.shootBullet = function(shootState) {
 
     bullet.body.createBodyCallback(this.getCurrentGun(), hitMyGun, this);
     bullet.body.createBodyCallback(this.getOtherGun(), hitOtherGun, this);
-    this.ground.forEach(function(groundBlock){
-        bullet.body.createBodyCallback(groundBlock, hitGround, this);
-    }, this);
-
+   
     // Revive the bullet
     // This makes the bullet "alive"
     bullet.revive();
@@ -263,6 +276,8 @@ GameState.prototype.shootBullet = function(shootState) {
     bullet.body.velocity.x = Math.cos(bullet.body.rotation) * speed;
     bullet.body.velocity.y = Math.sin(bullet.body.rotation) * speed;
 };
+
+
 
 function hitMyGun(bulletBody, gunBody) {
     console.log('hit myself: loose!');
@@ -288,16 +303,23 @@ function hitOtherGun(bulletBody, gunBody) {
     gameState.session.hitPlayer(this.otherPlayer);
 }
 
-function hitGround(bulletBody, gunBody) {
+function hitGround(bulletBody, groundBlockBody) {
     console.log('hit ground');
-    var gun = gunBody.sprite;
+    var groundBlock = groundBlockBody.sprite;
     var bullet = bulletBody.sprite;
-
+   
     var gameState = game.state.getCurrentState();
-
+    groundBlock.kill();
     bullet.kill();
     gameState.session.hitNothing();
 }
+
+function gunHitGround(gunBody, groundBlockBody) {
+    console.log('gun landed on ground');
+    gunBody.static = true;
+    gunBody.fixedRotation = false;
+}
+
 GameState.prototype.triggerGunRotation = function(angle) {
     if (this.socket != null) {
         this.socket.emit('rotateGun', angle);
@@ -319,7 +341,7 @@ GameState.prototype.update = function() {
 
     // Rotate all living bullets to match their trajectory
     this.bulletPool.forEachAlive(function(bullet) {
-        bullet.rotation = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x);
+        bullet.body.rotation = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x) + Math.PI;
     }, this);
 
     if (this.initialized) {
