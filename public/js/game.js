@@ -182,7 +182,8 @@ GameState.prototype.setEventHandlers = function() {
 function onGameReady(session) {
     console.log('Event: onGameReady')
     var gameState = game.state.getCurrentState();
-    gameState.initGame(session);a
+    gameState.initGame(session);
+    Sprengja.Message.hide();
 }
 
 function onKilledPlayer(session) {
