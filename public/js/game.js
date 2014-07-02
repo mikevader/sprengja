@@ -331,7 +331,7 @@ GameState.prototype.update = function() {
 
     // Rotate all living bullets to match their trajectory
     this.bulletPool.forEachAlive(function(bullet) {
-        bullet.rotation = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x);
+        bullet.body.rotation = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x) + Math.PI;
     }, this);
 
     if (this.initialized) {
