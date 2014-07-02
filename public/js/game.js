@@ -40,12 +40,18 @@ GameState.prototype.create = function() {
     for(var x = -56; x < this.game.width; x += 80) {
         Sprengja.GraphicsFactory.addCloudAt(x);
     }
+    
+    var terrainContour = this.terrain(this.game.width,this.game.height,this.game.height/4,0.62);
+    this.drawTerrainCountour(terrainContour,Sprengja.Settings.DEBUG);
 
     // Create some ground
     this.ground = this.game.add.group();
-    for(var x = 0; x < this.game.width; x += 32) {
-        var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x);
-        this.ground.add(groundBlock);
+    for(var x = 2; x < this.game.width; x += 4) {
+        var terrainBoundY = terrainContour[x];       
+        for(var y = this.game.height - 2;y > terrainBoundY; y -= 4){
+            var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
+            this.ground.add(groundBlock);
+        }
     }
     
     // Simulate a pointer click/tap input at the center of the stage
@@ -58,6 +64,50 @@ GameState.prototype.create = function() {
     
     Sprengja.Menu.show();
 };
+
+GameState.prototype.drawTerrainCountour = function(contour,shouldDraw) {   
+    if(shouldDraw){
+        var bmd = game.add.bitmapData(this.game.width,this.game.height);   
+            bmd.ctx.beginPath();
+            bmd.ctx.moveTo(0, contour[0]);
+            for (var t = 1; t < contour.length; t++) {
+                bmd.ctx.lineTo(t, contour[t]);
+            }
+            bmd.ctx.lineWidth = 2;
+
+            bmd.ctx.strokeStyle = '#d44d0e';
+            bmd.ctx.stroke();
+    
+            var spriteTerrainContour = this.game.add.sprite(0,0,bmd);
+    }
+};
+
+GameState.prototype.terrain = function(width, height, displace, roughness) {
+    var points = [],
+        // Gives us a power of 2 based on our width
+     power = Math.pow(2, Math.ceil(Math.log(width) / (Math.log(2))));
+        
+
+    // Set the initial left point
+    points[0] = (height - height / 4) + (Math.random() * displace * 2) - displace;
+    // set the initial right point
+    points[power] = (height - height / 4) + (Math.random() * displace * 2) - displace;
+    console.log(power);
+    displace *= roughness;
+
+    // Increase the number of segments
+    for (var i = 1; i < power; i *= 2) {
+        // Iterate through each segment calculating the center point
+        for (var j = (power / i) / 2; j < power; j += power / i) {
+            points[j] = ((points[j - (power / i) / 2] + points[j + (power / i) / 2]) / 2);
+            points[j] += (Math.random() * displace * 2) - displace
+        }
+        // reduce our random range
+        displace *= roughness;
+    }
+    return points;
+};
+
 
 GameState.prototype.initRemoteGame = function(session) {
     console.log('Start remote game');
