@@ -290,6 +290,7 @@ function hitGun(bulletBody, gunBody) {
     } else {
         console.log('hit other player: win!');
         gameState.session.hitPlayer(gameState.otherPlayer);
+        Sprengja.Menu.newGameMenu.show();
     }
 }
 
