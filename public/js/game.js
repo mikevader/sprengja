@@ -75,13 +75,18 @@ GameState.prototype.drawTerrainCountour = function(contour,shouldDraw) {
 
 GameState.prototype.initRemoteGame = function(session) {
     console.log('Start remote game');
-    var host = location.origin.replace(/^http/, 'ws');
-    this.socket = io.connect(host, {transports: ['websocket']})
+    var host = location.origin.replace(/^http/, 'ws'),
+        socket = io.connect(host, {transports: ['websocket']});
+
+    this.socket = socket;
     this.setEventHandlers();
     var session = new Session();
     session.resetPlayerIds();
 
-    this.socket.emit('join game', {name: 'undefined', session: new Session()});
+    Sprengja.Message.query('Username:', 'Create new game', function () {
+        socket.emit('join game', {name: Sprengja.Message.getInputText(), session: new Session()});
+        Sprengja.Message.hide();
+    });
 };
 
 GameState.prototype.initGame = function(session) {
