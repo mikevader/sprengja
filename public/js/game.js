@@ -207,7 +207,6 @@ function onShootBullet(session) {
 }
 
 function onRotateGun(angle) {
-    console.log('Event: onRotateGun(' + angle + ')');
     var gameState = game.state.getCurrentState();
     gameState.rotateGun(angle);
 }
