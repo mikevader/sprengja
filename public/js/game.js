@@ -44,20 +44,7 @@ GameState.prototype.create = function () {
         Sprengja.GraphicsFactory.addCloudAt(x);
     }
     
-    var terrainContour = this.terrain(this.game.width,this.game.height,this.game.height/7,0.62);
-    this.drawTerrainCountour(terrainContour,Sprengja.Settings.DEBUG);
-
-    // Create some ground
-    this.ground = this.game.add.group();
-    for(var x = 2; x < this.game.width; x += 4) {
-        var terrainBoundY = terrainContour[x];       
-        for(var y = this.game.height - 2;y > terrainBoundY; y -= 4){
-            var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
-            groundBlock.body.setCollisionGroup(this.groundCollisionGroup);      
-            groundBlock.body.collides([this.gunCollisionGroup,this.bulletsCollisionGroup]);
-            this.ground.add(groundBlock);
-        }
-    }
+  
     
     // Simulate a pointer click/tap input at the center of the stage
     // when the example begins running.
@@ -87,33 +74,6 @@ GameState.prototype.drawTerrainCountour = function(contour,shouldDraw) {
     }
 };
 
-GameState.prototype.terrain = function(width, height, displace, roughness) {
-    var points = [],
-        // Gives us a power of 2 based on our width
-     power = Math.pow(2, Math.ceil(Math.log(width) / (Math.log(2))));
-        
-
-    // Set the initial left point
-    points[0] = (height - height / 6) + (Math.random() * displace * 2) - displace;
-    // set the initial right point
-    points[power] = (height - height / 6) + (Math.random() * displace * 2) - displace;
-    console.log(power);
-    displace *= roughness;
-
-    // Increase the number of segments
-    for (var i = 1; i < power; i *= 2) {
-        // Iterate through each segment calculating the center point
-        for (var j = (power / i) / 2; j < power; j += power / i) {
-            points[j] = ((points[j - (power / i) / 2] + points[j + (power / i) / 2]) / 2);
-            points[j] += (Math.random() * displace * 2) - displace
-        }
-        // reduce our random range
-        displace *= roughness;
-    }
-    return points;
-};
-
-
 GameState.prototype.initRemoteGame = function(session) {
     console.log('Start remote game');
     var host = location.origin.replace(/^http/, 'ws');
@@ -128,6 +88,11 @@ GameState.prototype.initRemoteGame = function(session) {
 GameState.prototype.initGame = function(session) {
     if (this.initialized) {
         return;
+    }
+    
+    if(this.ground == null){
+        var level = Sprengja.GraphicsFactory.createLevel(this.game.width,this.game.height);
+        this.createLevel(level);
     }
 
     this.coordinateModelX = new CoordinateModel(0, 1);
@@ -177,6 +142,33 @@ GameState.prototype.setEventHandlers = function() {
     this.socket.on('rotateGun', onRotateGun);
     this.socket.on('showMessage', onShowMessage);
     this.socket.on('hideMessage', onHideMessage);
+    this.socket.on('load level',onLevelInit);
+};
+
+GameState.prototype.createLevel = function(level) {
+    console.log('Creating new level');
+    var rescaledLevel = [];
+    var levelData = level.terrainPoints;
+    var levelMin = level.minimumBound;
+    var levelMax = level.maximumBound;
+    var terrainContour = [];
+    for(var i = 0;i<levelData.length;i++){
+        //(max'-min')/(max-min)*(value-min)+min'
+        terrainContour[i] = this.game.height / (levelMax - levelMin) * (levelData[i] - levelMin);
+    }
+    this.drawTerrainCountour(terrainContour,Sprengja.Settings.DEBUG);
+
+    // Create some ground
+    this.ground = this.game.add.group();
+    for(var x = 2; x < this.game.width; x += 4) {
+        var terrainBoundY = terrainContour[x];       
+        for(var y = this.game.height - 2;y > terrainBoundY; y -= 4){
+            var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
+            groundBlock.body.setCollisionGroup(this.groundCollisionGroup);      
+            groundBlock.body.collides([this.gunCollisionGroup,this.bulletsCollisionGroup]);
+            this.ground.add(groundBlock);
+        }
+    }
 };
 
 function onGameReady(session) {
@@ -184,6 +176,11 @@ function onGameReady(session) {
     var gameState = game.state.getCurrentState();
     gameState.initGame(session);
     Sprengja.Message.hide();
+}
+
+function onLevelInit(level){
+    var gameState = game.state.getCurrentState();
+    gameState.createLevel();
 }
 
 function onKilledPlayer(session) {

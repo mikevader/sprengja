@@ -1,6 +1,40 @@
 var Sprengja = Sprengja || {};
 
 Sprengja.GraphicsFactory = {
+    
+    createLevel: function(width,height){
+        var level = new Level();
+        var terrainContour = Sprengja.GraphicsFactory.terrain(width,height,height/7,0.62);
+        level.setLevelData(terrainContour);
+        level.setRange(0,height);
+        return level; 
+    },
+    
+    terrain : function(width, height, displace, roughness) {
+        var points = [],
+        // Gives us a power of 2 based on our width
+        power = Math.pow(2, Math.ceil(Math.log(width) / (Math.log(2))));
+        
+
+        // Set the initial left point
+        points[0] = (height - height / 6) + (Math.random() * displace * 2) - displace;
+        // set the initial right point
+        points[power] = (height - height / 6) + (Math.random() * displace * 2) - displace;
+        console.log(power);
+        displace *= roughness;
+
+        // Increase the number of segments
+        for (var i = 1; i < power; i *= 2) {
+            // Iterate through each segment calculating the center point
+            for (var j = (power / i) / 2; j < power; j += power / i) {
+                points[j] = ((points[j - (power / i) / 2] + points[j + (power / i) / 2]) / 2);
+                points[j] += (Math.random() * displace * 2) - displace
+            }
+            // reduce our random range
+            displace *= roughness;
+        }
+        return points;
+    },
 
     createKilledBullet : function() {
         var bullet = game.add.sprite(0, 0, Sprengja.Resources.BULLET);

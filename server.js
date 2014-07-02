@@ -61,20 +61,6 @@ var setEventHandlers = function() {
 	connection.sockets.on('connection', onSocketConnection);
 };
 
-function normalize(value, min, max){
-    var normalizedValue = (value - min)/(max - min);
-    return normalizedValue;
-};
-
-function createNormalizedTerrain(){
-    var width = 1280;
-    var height = 960;
-    var terrainContour = Sprengja.GraphicsFactory.terrain(width,height,height/7,0.62);
-    for(int i = 0;i<terrainContour.length;i++){
-        terrainContour[i] = normalize(terrainContour[i],0,height);
-    }
-    return terrainContour; 
-};
 
 function createNewSession(room, playerA, playerB) {
 	// gameSessions.push({roomId: room,
@@ -107,6 +93,11 @@ function onPlayerJoinGame(socket, game) {
 		session.playerA.id = newPlayer.id;
 		session.playerB.id = waitingPlayer.id;
 		waitingPlayer = null;
+        
+        var level = Sprengja.GraphicsFactory.createLevel(1280,960);
+        
+        socket.to(roomId).emit('load level',level);
+        socket.to(roomId).broadcast.emit('load level',level);
 
 		socket.to(roomId).emit('game ready', session);
 		socket.to(roomId).broadcast.emit('game ready', session);
