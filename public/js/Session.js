@@ -23,7 +23,7 @@ var Session = function(session) {
 		playerA = {
 			name: 'A',
 			x: 0.1,
-			y: 0.2,
+			y: 0.9,
 			angle: 0,
 			id: 'id_A',
             color: 0x00ff00
@@ -33,7 +33,7 @@ var Session = function(session) {
 		playerB = {
 			name: 'B',
 			x: 0.9,
-			y: 0.2,
+			y: 0.9,
 			angle: -Math.PI,
 			id: 'id_B',
             color: 0xff0000

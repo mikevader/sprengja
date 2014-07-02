@@ -16,12 +16,14 @@ GameState.prototype.create = function () {
     this.game.physics.p2.restitution = 0.9;
     this.game.physics.p2.setImpactEvents(true);
     
+    
+    // might be interessting to use
+    // game.physics.p2.setPostBroadphaseCallback(checkPossibleColl, this);
     this.bulletsCollisionGroup = game.physics.p2.createCollisionGroup();
     this.gunCollisionGroup = game.physics.p2.createCollisionGroup();
     this.groundCollisionGroup = game.physics.p2.createCollisionGroup();
     
     game.physics.p2.updateBoundsCollisionGroup();
-
 
     // Create an object pool of bullets
     this.bulletPool = this.game.add.group();
@@ -51,7 +53,8 @@ GameState.prototype.create = function () {
         var terrainBoundY = terrainContour[x];       
         for(var y = this.game.height - 2;y > terrainBoundY; y -= 4){
             var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
-            groundBlock.body.setCollisionGroup(this.groundCollisionGroup);          
+            groundBlock.body.setCollisionGroup(this.groundCollisionGroup);      
+            groundBlock.body.collides([this.gunCollisionGroup,this.bulletsCollisionGroup]);
             this.ground.add(groundBlock);
         }
     }
@@ -161,6 +164,8 @@ function createGun(gameState, player) {
 
     var gun = Sprengja.GraphicsFactory.createGunAt(xPosition, yPosition, player);
     gun.body.setCollisionGroup(gameState.gunCollisionGroup);
+    gun.body.collides(gameState.bulletsCollisionGroup);
+    gun.body.collides(gameState.groundCollisionGroup, gunHitGround, gameState);
     return gun;
 };
 
@@ -240,12 +245,7 @@ GameState.prototype.shootBullet = function(shootState) {
 
     bullet.body.createBodyCallback(this.getCurrentGun(), hitMyGun, this);
     bullet.body.createBodyCallback(this.getOtherGun(), hitOtherGun, this);
-    /*
-    this.ground.forEach(function(groundBlock){
-        
-        bullet.body.createBodyCallback(groundBlock, hitGround, this);
-    }, this);
-    */
+   
     // Revive the bullet
     // This makes the bullet "alive"
     bullet.revive();
@@ -303,6 +303,13 @@ function hitGround(bulletBody, groundBlockBody) {
     bullet.kill();
     gameState.session.hitNothing();
 }
+
+function gunHitGround(gunBody, groundBlockBody) {
+    console.log('gun landed on ground');
+    gunBody.static = true;
+    gunBody.fixedRotation = false;
+}
+
 GameState.prototype.triggerGunRotation = function(angle) {
     if (this.socket != null) {
         this.socket.emit('rotateGun', angle);
