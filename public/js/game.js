@@ -31,8 +31,8 @@ GameState.prototype.create = function () {
         // Create each bullet and add it to the group.
         var bullet = Sprengja.GraphicsFactory.createKilledBullet();
         bullet.body.setCollisionGroup(this.bulletsCollisionGroup);
-        bullet.body.collides(this.gunCollisionGroup,hitMyGun,this);
-        bullet.body.collides(this.groundCollisionGroup,hitGround,this);
+        bullet.body.collides(this.gunCollisionGroup, hitGun, this);
+        bullet.body.collides(this.groundCollisionGroup, hitGround, this);
         this.bulletPool.add(bullet);
     }
 
@@ -43,8 +43,7 @@ GameState.prototype.create = function () {
     for(var x = -56; x < this.game.width; x += 80) {
         Sprengja.GraphicsFactory.addCloudAt(x);
     }
-    
-  
+
     
     // Simulate a pointer click/tap input at the center of the stage
     // when the example begins running.
@@ -54,7 +53,7 @@ GameState.prototype.create = function () {
     // Show FPS
     this.game.time.advancedTiming = true;
     
-    Sprengja.Menu.show();
+    Sprengja.Menu.newGameMenu.show();
 };
 
 GameState.prototype.drawTerrainCountour = function(contour,shouldDraw) {   
@@ -206,7 +205,6 @@ function onShootBullet(session) {
 }
 
 function onRotateGun(angle) {
-    console.log('Event: onRotateGun(' + angle + ')');
     var gameState = game.state.getCurrentState();
     gameState.rotateGun(angle);
 }
@@ -252,10 +250,6 @@ GameState.prototype.shootBullet = function(shootState) {
     // If there aren't any bullets available then don't shoot
     if (bullet === null || bullet === undefined) return;
 
-
-    bullet.body.createBodyCallback(this.getCurrentGun(), hitMyGun, this);
-    bullet.body.createBodyCallback(this.getOtherGun(), hitOtherGun, this);
-   
     // Revive the bullet
     // This makes the bullet "alive"
     bullet.revive();
@@ -279,28 +273,23 @@ GameState.prototype.shootBullet = function(shootState) {
 
 
 
-function hitMyGun(bulletBody, gunBody) {
-    console.log('hit myself: loose!');
-    var gun = gunBody.sprite;
-    var bullet = bulletBody.sprite;
-
+function hitGun(bulletBody, gunBody) {
     var gameState = game.state.getCurrentState();
 
-    gun.damage(10);
-    bullet.kill();
-    gameState.session.hitPlayer(this.player);
-}
-
-function hitOtherGun(bulletBody, gunBody) {
-    console.log('hit other player: win!');
     var gun = gunBody.sprite;
     var bullet = bulletBody.sprite;
-
-    var gameState = game.state.getCurrentState();
-
+    
     gun.damage(10);
     bullet.kill();
-    gameState.session.hitPlayer(this.otherPlayer);
+
+    if (gun == gameState.myGun) {
+        console.log('hit myself: loose!');
+        gameState.session.hitPlayer(gameState.player);
+    } else {
+        console.log('hit other player: win!');
+        gameState.session.hitPlayer(gameState.otherPlayer);
+        Sprengja.Menu.newGameMenu.show();
+    }
 }
 
 function hitGround(bulletBody, groundBlockBody) {
@@ -310,14 +299,18 @@ function hitGround(bulletBody, groundBlockBody) {
    
     var gameState = game.state.getCurrentState();
     groundBlock.kill();
-    bullet.kill();
-    gameState.session.hitNothing();
+    
+    if (bullet.alive) {
+        bullet.kill();
+        gameState.session.hitNothing();
+    }
 }
 
 function gunHitGround(gunBody, groundBlockBody) {
     console.log('gun landed on ground');
     gunBody.static = true;
     gunBody.fixedRotation = false;
+    //gunBody.setRectangle(32, 32);
 }
 
 GameState.prototype.triggerGunRotation = function(angle) {
