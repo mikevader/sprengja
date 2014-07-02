@@ -8,7 +8,8 @@ Sprengja.Resources = {
     EXPLOSION : '/img/gfx/explosion.png',
     NEW_CLIENT_GAME : '/img/gfx/newclientgame.png',
     NEW_SERVER_GAME : '/img/gfx/newservergame.png',
-       
+    JOIN_SERVER_GAME : '/img/gfx/joinservergame.png',
+
     preloadAllImages : function (game) {
         
         function preloadImage(url) {
@@ -24,6 +25,7 @@ Sprengja.Resources = {
         preloadImage(Sprengja.Resources.GROUND);
         preloadImage(Sprengja.Resources.NEW_CLIENT_GAME);
         preloadImage(Sprengja.Resources.NEW_SERVER_GAME);
+        preloadImage(Sprengja.Resources.JOIN_SERVER_GAME);
         preloadSpritesheet(Sprengja.Resources.EXPLOSION, 128, 128);
     }
     

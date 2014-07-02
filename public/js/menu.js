@@ -6,8 +6,8 @@ Sprengja.Menu = {
 
         var newClientButton,
             newServerButton,
-            buttons,
-            centeredText;
+            joinServerButton,
+            buttons;
 
         function hide(event) {
             var i = 0;
@@ -33,6 +33,11 @@ Sprengja.Menu = {
             hide(event);
         }
 
+        function joinExistingServerGame(source, event) {
+            // TODO Split logic to create or join server game
+            alert('Not yet implemented...');
+        }
+
         function initButton(resource, callBackFunction, y) {
             var image = game.add.sprite(game.world.centerX, y, resource);
             image.anchor.set(0.5);
@@ -44,9 +49,10 @@ Sprengja.Menu = {
         return {
 
             show: function () {
-                newClientButton = initButton(Sprengja.Resources.NEW_CLIENT_GAME, startNewLocalGame, game.world.centerY * 0.3);
+                newClientButton = initButton(Sprengja.Resources.NEW_CLIENT_GAME, startNewLocalGame, game.world.centerY - (30 + 80));
                 newServerButton = initButton(Sprengja.Resources.NEW_SERVER_GAME, startNewServerGame, game.world.centerY);
-                buttons = [newClientButton, newServerButton];
+                joinServerButton = initButton(Sprengja.Resources.JOIN_SERVER_GAME, joinExistingServerGame, game.world.centerY + 80 + 30);
+                buttons = [newClientButton, newServerButton, joinServerButton];
             }
         }
     })(),
