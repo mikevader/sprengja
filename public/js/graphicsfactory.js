@@ -53,8 +53,10 @@ Sprengja.GraphicsFactory = {
         }, game);
 
         gun.body.static = false;
+        gun.body.fixedRotation  = true;
         
         gun.body.setRectangle(64, 64);
+        gun.body.mass = 5000;
         
         return gun;
     }

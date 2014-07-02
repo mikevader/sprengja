@@ -6,9 +6,8 @@ Sprengja.Settings = {
     MAX_TRIGGER_DOWNTIME: 1500,
     BULLET_SPEED : 1.5,         // Relative to screen size (pixels/second)
     NUMBER_OF_BULLETS : 20,
-    GRAVITY : 980,               // pixels/second/second
+    GRAVITY : 1200,               // pixels/second/second
     BACKGROUND_COLOR : 0x4488cc,
-    GRAVITY : 980,               // pixels/second/second
-    DEBUG : true                // Debugging information
+    DEBUG : false                // Debugging information
     
 };

@@ -15,6 +15,10 @@ GameState.prototype.create = function () {
     this.game.physics.startSystem(Phaser.Physics.P2JS);
     this.game.physics.p2.restitution = 0.9;
     this.game.physics.p2.setImpactEvents(true);
+    
+    
+    // might be interessting to use
+    // game.physics.p2.setPostBroadphaseCallback(checkPossibleColl, this);
 
     // Create an object pool of bullets
     this.bulletPool = this.game.add.group();
@@ -278,9 +282,9 @@ function hitOtherGun(bulletBody, gunBody) {
     gameState.session.hitPlayer(this.otherPlayer);
 }
 
-function hitGround(bulletBody, gunBody) {
+function hitGround(bulletBody, groundBlockBody) {
     console.log('hit ground');
-    var gun = gunBody.sprite;
+    var groundBlock = groundBlockBody.sprite;
     var bullet = bulletBody.sprite;
 
     var gameState = game.state.getCurrentState();
@@ -298,7 +302,7 @@ GameState.prototype.triggerGunRotation = function(angle) {
 }
 
 GameState.prototype.rotateGun = function(angle) {
-    this.getCurrentGun().angle = angle;
+    this.getCurrentGun().body.polygon.rotate(angle);
 }
 
 // The update() method is called every frame
