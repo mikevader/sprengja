@@ -1,6 +1,6 @@
 'use strict';
 
-var GameState = function(game) {
+var GameState = function() {
 };
 
 // Load images and sounds
@@ -11,12 +11,10 @@ GameState.prototype.preload = function() {
 // Setup the example
 GameState.prototype.create = function() {
     this.debug = {
-        showTrajectory: false,
         showCollisionBound: false
     };
 
-    // Set stage background color
-    this.game.stage.backgroundColor = 0x4488cc;
+    game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
 
     this.game.physics.startSystem(Phaser.Physics.P2JS);
     this.game.physics.p2.restitution = 0.9;
@@ -69,15 +67,6 @@ GameState.prototype.create = function() {
         groundBlock.body.collideWorldBounds = true;
     }
 
-    // this.ground.body.static = true;
-    this.game.physics.enable(this.ground, Phaser.Physics.P2JS, this.debug.showCollisionBound);
-
-    // Setup a canvas to draw the trajectory on the screen
-    this.bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
-    this.bitmap.context.fillStyle = 'rgb(255, 255, 255)';
-    this.bitmap.context.strokeStyle = 'rgb(255, 255, 255)';
-    this.game.add.image(0, 0, this.bitmap);
-
     // Simulate a pointer click/tap input at the center of the stage
     // when the example begins running.
     this.game.input.activePointer.x = this.game.width/2;
@@ -85,9 +74,6 @@ GameState.prototype.create = function() {
 
     // Show FPS
     this.game.time.advancedTiming = true;
-    this.fpsText = this.game.add.text(
-        20, 20, '', { font: '16px Arial', fill: '#ffffff' }
-    );
     
     Sprengja.Menu.show();
 };
@@ -173,6 +159,7 @@ GameState.prototype.setEventHandlers = function() {
     this.socket.on('disconnect', onSocketDisconnect);
     this.socket.on('shootBullet', onShootBullet);
     this.socket.on('game ready', onGameReady);
+    this.socket.on('rotateGun', onRotateGun);
 };
 
 function onGameReady (session) {
@@ -191,56 +178,25 @@ function onKilledPlayer(session) {
 
 }
 
-function onSocketConnected () {
+function onSocketConnected() {
     console.log('Connected to socket server');
 }
 
-function onSocketDisconnect () {
+function onSocketDisconnect() {
     console.log('Disconnected from socket server');
 }
 
-function onShootBullet (session) {
+function onShootBullet(session) {
     console.log('Player shot with parameters: ' + session.bulletData);
     var gameState = game.state.getCurrentState();
 
     gameState.shootBullet(session);
 }
 
-
-GameState.prototype.drawTrajectory = function() {
-    // Clear the bitmap
-    this.bitmap.context.clearRect(0, 0, this.game.width, this.game.height);
-
-    // Set fill style to white
-    this.bitmap.context.fillStyle = 'rgba(255, 255, 255, 0.5)';
-
-    // Calculate a time offset. This offset is used to alter the starting
-    // time of the draw loop so that the dots are offset a little bit each
-    // frame. It gives the trajectory a "marching ants" style animation.
-    var MARCH_SPEED = 40; // Smaller is faster
-    this.timeOffset = this.timeOffset + 1 || 0;
-    this.timeOffset = this.timeOffset % MARCH_SPEED;
-
-    // Just a variable to make the trajectory match the actual track a little better.
-    // The mismatch is probably due to rounding or the physics engine making approximations.
-    var correctionFactor = 0.99;
-
-    // Draw the trajectory
-    // http://en.wikipedia.org/wiki/Trajectory_of_a_projectile#Angle_required_to_hit_coordinate_.28x.2Cy.29
-
-    var currentGun = this.getCurrentGun();
-
-    var theta = -currentGun.rotation;
-    var x = 0, y = 0;
-    for(var t = 0 + this.timeOffset/(1000*MARCH_SPEED/60); t < 3; t += 0.03) {
-        x = Sprengja.Settings.BULLET_SPEED * t * Math.cos(theta) * correctionFactor;
-        y = Sprengja.Settings.BULLET_SPEED * t * Math.sin(theta) * correctionFactor - 0.5 * Sprengja.Settings.GRAVITY * t * t;
-        this.bitmap.context.fillRect(x + currentGun.x, currentGun.y - y, 3, 3);
-        if (y < -15) break;
-    }
-
-    this.bitmap.dirty = true;
-};
+function onRotateGun(angle) {
+    var gameState = game.state.getCurrentState();
+    gameState.rotateGun(angle);
+}
 
 GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     // Enforce a short delay between shots by recording
@@ -270,8 +226,8 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     }
 }
 
-GameState.prototype.shootBullet = function(state) {
-    console.log(state);
+GameState.prototype.shootBullet = function(shootState) {
+    console.log(shootState);
     console.log('current player: ' + this.session.activePlayer.id);
     console.log('this.player: ' + this.player.id);
 
@@ -313,11 +269,11 @@ GameState.prototype.shootBullet = function(state) {
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the myGun position.
-    bullet.reset(this.coordinateModelX.worldToScreen(state.bulletData.x), this.coordinateModelY.worldToScreen(state.bulletData.y));
-    bullet.body.rotation = state.bulletData.angle;
+    bullet.reset(this.coordinateModelX.worldToScreen(shootState.bulletData.x), this.coordinateModelY.worldToScreen(shootState.bulletData.y));
+    bullet.body.rotation = shootState.bulletData.angle;
 
     // Shoot it in the right direction
-    var speed = this.coordinateModelX.worldToScreen(state.bulletData.speed);
+    var speed = this.coordinateModelX.worldToScreen(shootState.bulletData.speed);
     bullet.body.velocity.x = Math.cos(bullet.body.rotation) * speed;
     bullet.body.velocity.y = Math.sin(bullet.body.rotation) * speed;
 };
@@ -356,18 +312,23 @@ function hitGround(bulletBody, gunBody) {
     bullet.kill();
     gameState.session.hitNothing();
 }
+GameState.prototype.triggerGunRotation = function(angle) {
+    if (this.socket != null) {
+        this.socket.emit('rotateGun', angle);
+    } else {
+        this.rotateGun(angle);
+    }
+}
+
+GameState.prototype.rotateGun = function(angle) {
+    this.getCurrentGun().body.rotation = angle;
+}
 
 // The update() method is called every frame
 GameState.prototype.update = function() {
     if (this.game.time.fps !== 0) {
         var hudText = this.game.time.fps + ' FPS' + ( (this.session) ? '   State: ' + this.session.statusText() : '');
-
-        this.fpsText.setText(hudText);
-    }
-
-    // Draw the trajectory every frame
-    if (this.initialized && this.debug.showTrajectory) {
-        this.drawTrajectory();
+        Sprengja.Menu.text.setStatusText(hudText);
     }
 
     // Rotate all living bullets to match their trajectory
@@ -378,13 +339,10 @@ GameState.prototype.update = function() {
     if (this.initialized) {
 
         if (this.session.isReadyForPlayer(this.player)) {
-
-            var currentGun = this.getCurrentGun();
-
             // Aim the myGun at the pointer.
             // All this function does is calculate the angle using
             // Math.atan2(yPointer-ymyGun, xPointer-xmyGun)
-            currentGun.body.rotation = this.game.physics.arcade.angleToPointer(currentGun);
+            this.triggerGunRotation(this.game.physics.arcade.angleToPointer(this.getCurrentGun()));
 
             // Shoot a bullet
             if (this.session.isReadyForShot() && this.game.input.activePointer.isDown) {
@@ -399,8 +357,10 @@ GameState.prototype.update = function() {
                 if (this.game.input.activePointer.isDown) {
                     // Trigger is still down
                     // TODO nioe: Draw bullet speed ratio on gui
+                    Sprengja.Menu.text.setCenteredText(Math.floor(bulletSpeedRatio * 100) + '%');
                 } else {
                     // Player released trigger
+                    Sprengja.Menu.text.hideCenteredText();
                     this.triggerDownTime = null;
                     this.pullTrigger(bulletSpeedRatio);
                 }
@@ -429,7 +389,7 @@ GameState.prototype.getOtherGun = function() {
     }
 };
 
-var screenDimension = new ScreenDimension();
-var game = new Phaser.Game(screenDimension.width, screenDimension.height, Phaser.AUTO, 'game');
+var gameDimension = new Sprengja.GameDimension();
+var game = new Phaser.Game(gameDimension.getGameWidth(), gameDimension.getGameHeight(), Phaser.AUTO, 'game');
 game.state.add('game', GameState, true);
-console.log("Drew new game canvas with dimensions: " + screenDimension.width + " x " + screenDimension.height);
+console.log("Drew new game canvas with dimensions: " + gameDimension.getGameWidth() + " x " + gameDimension.getGameHeight());
