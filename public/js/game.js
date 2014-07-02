@@ -91,6 +91,7 @@ GameState.prototype.initGame = function(session) {
     }
     
     if(this.ground == null){
+        console.log('level is null');
         var level = Sprengja.GraphicsFactory.createLevel(this.game.width,this.game.height);
         this.createLevel(level);
     }
@@ -180,7 +181,8 @@ function onGameReady(session) {
 
 function onLevelInit(level){
     var gameState = game.state.getCurrentState();
-    gameState.createLevel();
+    console.log('Event: onLevelInit: '+level);
+    gameState.createLevel(level);
 }
 
 function onKilledPlayer(session) {
