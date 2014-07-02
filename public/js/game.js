@@ -1,15 +1,15 @@
 'use strict';
 
-var GameState = function() {
+var GameState = function () {
 };
 
 // Load images and sounds
-GameState.prototype.preload = function() {
+GameState.prototype.preload = function () {
     Sprengja.Resources.preloadAllImages(game);
 };
 
 // Setup the example
-GameState.prototype.create = function() {
+GameState.prototype.create = function () {
     game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
 
     this.game.physics.startSystem(Phaser.Physics.P2JS);
@@ -20,17 +20,8 @@ GameState.prototype.create = function() {
     this.bulletPool = this.game.add.group();
     for(var i = 0; i < Sprengja.Settings.NUMBER_OF_BULLETS; i++) {
         // Create each bullet and add it to the group.
-        var bullet = this.game.add.sprite(0, 0, Sprengja.Resources.BULLET);
-        // Set its pivot point to the center of the bullet
-        this.game.physics.enable(bullet, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
+        var bullet = Sprengja.GraphicsFactory.createKilledBullet();
         this.bulletPool.add(bullet);
-
-        // Set its initial state to "dead".
-        bullet.kill();
-
-        bullet.events.onKilled.add(function(bullet1) {
-            Sprengja.Graphics.showExplosionAt(bullet1.x, bullet1.y);
-        }, this);
     }
 
     // Turn on gravity
@@ -94,35 +85,23 @@ GameState.prototype.initGame = function(session) {
     }
 
     // Create an object representing our myGun
-    this.myGun = createGun(this, this.player, 0x00ff00);
-
+    this.myGun = createGun(this, this.player);
 
     // Create an object representing our otherGun
-    this.otherGun = createGun(this, this.otherPlayer, 0xff0000);
+    this.otherGun = createGun(this, this.otherPlayer);
 
     this.session.init();
     this.initialized = true;
 };
 
-function createGun(gameState, player, color) {
+function createGun(gameState, player) {
     var xPosition = gameState.coordinateModelX.worldToScreen(player.x);
     var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
 
-    var gun = gameState.game.add.sprite(xPosition, yPosition, Sprengja.Resources.BULLET);
-    // Set the pivot point to the center of the myGun
-    gameState.game.physics.enable(gun, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
-    gun.tint = color;
-    gun.body.rotation = player.angle;
-    gun.events.onKilled.add(function(myGun) {
-        Sprengja.Graphics.showExplosionAt(myGun.x, myGun.y);
-    }, game);
-
-    gun.body.static = true;
+    var gun = Sprengja.GraphicsFactory.createGunAt(xPosition, yPosition, player);
 
     return gun;
-}
-
-
+};
 
 GameState.prototype.setEventHandlers = function() {
     this.socket.on('connect', onSocketConnected);
