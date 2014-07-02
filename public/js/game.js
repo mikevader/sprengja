@@ -67,7 +67,7 @@ GameState.prototype.create = function () {
     // Show FPS
     this.game.time.advancedTiming = true;
     
-    Sprengja.Menu.show();
+    Sprengja.Menu.newGameMenu.show();
 };
 
 GameState.prototype.drawTerrainCountour = function(contour,shouldDraw) {   
