@@ -159,12 +159,14 @@ GameState.prototype.setEventHandlers = function() {
     this.socket.on('shootBullet', onShootBullet);
     this.socket.on('game ready', onGameReady);
     this.socket.on('rotateGun', onRotateGun);
+    this.socket.on('showMessage', onShowMessage);
+    this.socket.on('hideMessage', onHideMessage);
 };
 
 function onGameReady(session) {
     console.log('Event: onGameReady')
     var gameState = game.state.getCurrentState();
-    gameState.initGame(session);
+    gameState.initGame(session);a
 }
 
 function onKilledPlayer(session) {
@@ -191,6 +193,14 @@ function onRotateGun(angle) {
     console.log('Event: onRotateGun(' + angle + ')');
     var gameState = game.state.getCurrentState();
     gameState.rotateGun(angle);
+}
+
+function onShowMessage(message) {
+    Sprengja.Message.show(message);
+}
+
+function onHideMessage() {
+    Sprengja.Message.hide();
 }
 
 GameState.prototype.pullTrigger = function(bulletSpeedRatio) {

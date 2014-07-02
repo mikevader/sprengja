@@ -18,6 +18,10 @@ div.centered {
     vertical-align: middle;
 }
 
+div.hidden {
+    display: none;
+}
+
 #game {
     z-index: 10;
 }
@@ -26,11 +30,7 @@ div.centered {
     margin: auto;
 }
 
-#waiting-screen-container {
-    display: none;
-}
-
-#waiting-screen {
+#message {
     vertical-align: middle;
     width: 70%;
     padding: 20px;
