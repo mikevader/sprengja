@@ -9,6 +9,6 @@ Sprengja.Settings = {
     GRAVITY : 980,               // pixels/second/second
     BACKGROUND_COLOR : 0x4488cc,
     GRAVITY : 980,               // pixels/second/second
-    DEBUG : false                // Debugging information
+    DEBUG : true                // Debugging information
     
 };

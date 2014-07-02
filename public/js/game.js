@@ -238,6 +238,7 @@ function hitGround(bulletBody, gunBody) {
     bullet.kill();
     gameState.session.hitNothing();
 }
+
 GameState.prototype.triggerGunRotation = function(angle) {
     if (this.socket != null) {
         this.socket.emit('rotateGun', angle);
@@ -247,7 +248,7 @@ GameState.prototype.triggerGunRotation = function(angle) {
 }
 
 GameState.prototype.rotateGun = function(angle) {
-    this.getCurrentGun().body.rotation = angle;
+    this.getCurrentGun().angle = angle;
 }
 
 // The update() method is called every frame
