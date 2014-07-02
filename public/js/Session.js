@@ -25,7 +25,8 @@ var Session = function(session) {
 			x: 0.1,
 			y: 0.2,
 			angle: 0,
-			id: 'id_A'
+			id: 'id_A',
+            color: 0x00ff00
 		};
 
 		console.log('Slot B is free');
@@ -34,7 +35,8 @@ var Session = function(session) {
 			x: 0.9,
 			y: 0.2,
 			angle: -Math.PI,
-			id: 'id_B'
+			id: 'id_B',
+            color: 0xff0000
 		}
 
 		activePlayer = playerA;
