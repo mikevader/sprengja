@@ -89,13 +89,10 @@ var Session = function(session) {
 
 	this.playerById = function(id) {
 		var players = [this.playerA, this.playerB];
-	    console.log('find player by id: ' + id);
 
 	    for (var i = 0; i < players.length; i++) {
 	    	var player = players[i];
-	        console.log('player with index ' + i + ' has id: ' + player.id)
 	        if (players[i].id == id) {
-	        	console.log('found player: ' + players[i]);
 	            return players[i];
 	        }
 	    }
@@ -144,8 +141,6 @@ var Session = function(session) {
 
 	this.shootBullet = function(bulletData) {
 		if (this.state != SessionState.TRIGGER_DOWN) {
-			console.log('Tried to shoot in the wrong state!!!! current state: ' + this.state);
-
 			return this.createState('status');
 		}
 
@@ -156,9 +151,6 @@ var Session = function(session) {
 	};
 
 	this.hitPlayer = function(destroyedPlayer) {
-		console.log('current player: ' + this.activePlayer.name);
-		console.log('destroyed player: ' + destroyedPlayer.name);
-
 		if (destroyedPlayer === this.playerA) {
 			this.victoriousPlayer = this.playerB;
 		} else if (destroyedPlayer === this.playerB) {
