@@ -94,8 +94,8 @@ var Session = function(session) {
 
 	    for (var i = 0; i < players.length; i++) {
 	    	var player = players[i];
-	        if (players[i].id == id) {
-	            return players[i];
+	        if (player.id == id) {
+	            return player;
 	        }
 	    }
 
