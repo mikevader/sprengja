@@ -9,7 +9,7 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var io = require('socket.io');
-var Session = require('./public/Session').Session;
+var Session = require('./public/js/Session').Session;
 var Player = require('./Player').Player;
 
 /********************************
