@@ -4,7 +4,7 @@ Sprengja.Resources = {
     
     CLOUD : '/img/gfx/ball.png',
     BULLET : '/img/gfx/bullet.png',
-    GROUND : '/img/gfx/ground.png',
+    GROUND : '/img/gfx/minecraft_ground.png',
     EXPLOSION : '/img/gfx/explosion.png',
     NEW_CLIENT_GAME : '/img/gfx/newclientgame.png',
     NEW_SERVER_GAME : '/img/gfx/newservergame.png',
