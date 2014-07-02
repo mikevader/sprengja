@@ -29,7 +29,8 @@ GameState.prototype.create = function () {
         // Create each bullet and add it to the group.
         var bullet = Sprengja.GraphicsFactory.createKilledBullet();
         bullet.body.setCollisionGroup(this.bulletsCollisionGroup);
-        bullet.body.collides([this.gunCollisionGroup, this.groundCollisionGroup]);
+        bullet.body.collides(this.gunCollisionGroup,hitMyGun,this);
+        bullet.body.collides(this.groundCollisionGroup,hitGround,this);
         this.bulletPool.add(bullet);
     }
 
@@ -50,8 +51,7 @@ GameState.prototype.create = function () {
         var terrainBoundY = terrainContour[x];       
         for(var y = this.game.height - 2;y > terrainBoundY; y -= 4){
             var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
-            groundBlock.body.setCollisionGroup(this.groundCollisionGroup);
-            groundBlock.body.collides([this.bulletsCollisionGroup,this.gunCollisionGroup]);
+            groundBlock.body.setCollisionGroup(this.groundCollisionGroup);          
             this.ground.add(groundBlock);
         }
     }
@@ -147,14 +147,10 @@ GameState.prototype.initGame = function(session) {
 
     // Create an object representing our myGun
     this.myGun = createGun(this, this.player);
-    this.myGun.body.setCollisionGroup(this.gunCollisionGroup);
-    this.myGun.body.collides([this.bulletsCollisionGroup, this.groundCollisionGroup]);
-
+  
     // Create an object representing our otherGun
     this.otherGun = createGun(this, this.otherPlayer);
-    this.otherGun.body.setCollisionGroup(this.gunCollisionGroup);
-    this.otherGun.body.collides([this.bulletsCollisionGroup, this.groundCollisionGroup]);
-
+   
     this.session.init();
     this.initialized = true;
 };
@@ -164,7 +160,7 @@ function createGun(gameState, player) {
     var yPosition = gameState.coordinateModelY.worldToScreen(player.y);
 
     var gun = Sprengja.GraphicsFactory.createGunAt(xPosition, yPosition, player);
-
+    gun.body.setCollisionGroup(gameState.gunCollisionGroup);
     return gun;
 };
 
@@ -244,11 +240,12 @@ GameState.prototype.shootBullet = function(shootState) {
 
     bullet.body.createBodyCallback(this.getCurrentGun(), hitMyGun, this);
     bullet.body.createBodyCallback(this.getOtherGun(), hitOtherGun, this);
+    /*
     this.ground.forEach(function(groundBlock){
         
         bullet.body.createBodyCallback(groundBlock, hitGround, this);
     }, this);
-
+    */
     // Revive the bullet
     // This makes the bullet "alive"
     bullet.revive();
@@ -269,6 +266,8 @@ GameState.prototype.shootBullet = function(shootState) {
     bullet.body.velocity.x = Math.cos(bullet.body.rotation) * speed;
     bullet.body.velocity.y = Math.sin(bullet.body.rotation) * speed;
 };
+
+
 
 function hitMyGun(bulletBody, gunBody) {
     console.log('hit myself: loose!');
