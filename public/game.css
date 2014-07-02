@@ -1,6 +1,8 @@
 body {
+    font-family: 'Ubuntu', sans-serif;
     margin: 0px;
     padding: 0px;
+    background: black;
 }
 
 div.container {
@@ -8,17 +10,37 @@ div.container {
     position: absolute;
     height: 100%;
     width: 100%;
-    background: black;
     text-align: center;
 }
 
-#game {
+div.centered {
     display: table-cell;
     vertical-align: middle;
 }
 
+#game {
+    z-index: 10;
+}
+
 #game canvas {
     margin: auto;
+}
+
+#waiting-screen-container {
+    display: none;
+}
+
+#waiting-screen {
+    vertical-align: middle;
+    width: 70%;
+    padding: 20px;
+    background: black;
+    border-radius: 10px;
+    opacity: 0.7;
+    z-index: 20;
+    margin: auto;
+    color: white;
+    font-size: 3em;
 }
 
 #menu .button {

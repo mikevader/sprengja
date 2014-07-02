@@ -1,25 +1,34 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <link rel="stylesheet" href="/game.css" />
-  </head>
-  <body>
-    <div class="container">
-      <div id="game">
-      </div>
+<head>
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu:regular,bold&subset=Latin">
+    <link rel="stylesheet" href="./game.css"/>
+</head>
+<body>
+<div id="game-container" class="container">
+    <div id="game" class="centered">
     </div>
+</div>
 
-  <script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
-  <script src="/bower_components/phaser/phaser.js"></script>
-  <script src="/gamedimension.js"></script>
-  <script src="/menu.js"></script>
-  <script src="/graphicsfactory.js"></script>
-  <script src="/graphics.js"></script>
-  <script src="/CoordinateModel.js"></script>
-  <script src="/gamesettings.js"></script>
-  <script src="/resources.js"></script>
-  <script src="/Session.js"></script>
-  <script src="/game.js"></script>
-        
-  </body>
+<div id="waiting-screen-container" class="container">
+    <div class="centered">
+        <div id="waiting-screen">
+            Your game id is 12345.<br />Waiting for other player...
+        </div>
+    </div>
+</div>
+
+<script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
+<script src="/bower_components/phaser/phaser.js"></script>
+<script src="/gamedimension.js"></script>
+<script src="/menu.js"></script>
+<script src="/graphicsfactory.js"></script>
+<script src="/graphics.js"></script>
+<script src="/CoordinateModel.js"></script>
+<script src="/gamesettings.js"></script>
+<script src="/resources.js"></script>
+<script src="/Session.js"></script>
+<script src="/game.js"></script>
+
+</body>
 </html>
