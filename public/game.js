@@ -10,10 +10,6 @@ GameState.prototype.preload = function() {
 
 // Setup the example
 GameState.prototype.create = function() {
-    this.debug = {
-        showCollisionBound: false
-    };
-
     game.stage.backgroundColor = Sprengja.Settings.BACKGROUND_COLOR;
 
     this.game.physics.startSystem(Phaser.Physics.P2JS);
@@ -26,10 +22,7 @@ GameState.prototype.create = function() {
         // Create each bullet and add it to the group.
         var bullet = this.game.add.sprite(0, 0, Sprengja.Resources.BULLET);
         // Set its pivot point to the center of the bullet
-        // bullet.anchor.setTo(0.5, 0.5);
-        this.game.physics.enable(bullet, Phaser.Physics.P2JS, this.debug.showCollisionBound);
-        // this.game.physics.p2.enable(bullet, this.debug.showCollisionBound);
-        // this.game.physics.p2.enableBody(bullet, this.debug.showCollisionBound);
+        this.game.physics.enable(bullet, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
         this.bulletPool.add(bullet);
 
 
@@ -56,9 +49,7 @@ GameState.prototype.create = function() {
     for(var x = 0; x < this.game.width; x += 32) {
         // Add the ground blocks, enable physics on each, make them immovable
         var groundBlock = this.game.add.sprite(x, this.game.height - 32, Sprengja.Resources.GROUND);
-        this.game.physics.enable(groundBlock, Phaser.Physics.P2JS, this.debug.showCollisionBound);
-        // this.game.physics.p2,enable(groundBlock, this.debug.showCollisionBound);
-        // this.game.physics.p2.enableBody(groundBlock, this.debug.showCollisionBound);
+        this.game.physics.enable(groundBlock, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
         // groundBlock.body.static = true;
 
         // groundBlock.body.setCollisionGroup(this.groundCollisionGroup);
@@ -91,7 +82,6 @@ GameState.prototype.initRemoteGame = function(session) {
 
 GameState.prototype.initGame = function(session) {
     if (this.initialized) {
-        console.log('game already initialized');
         return;
     }
 
@@ -102,23 +92,16 @@ GameState.prototype.initGame = function(session) {
     this.coordinateModelY.setDeviceCoordinatesInverted(true);
 
     if (typeof session === 'undefined') {
-        console.log('init game local');
         this.session = new Session(session);
         this.session.remote = false;
-        console.log(this.session);
         this.player = this.session.playerA;
         this.otherPlayer = this.session.playerB;
     } else {
-        console.log('init game remote');
         this.session = new Session(session);
         this.session.remote = true;
-        console.log(this.socket);
         this.player = this.session.playerById(this.socket.socket.sessionid);
         this.otherPlayer = (this.session.playerA == this.player) ? this.session.playerB : this.session.playerA;
     }
-
-    console.log('Player: ' + this.player.name + ' with stats: x: ' + this.player.x + ', y: ' + this.player.y+ ', angle: ' + this.player.angle + ', id: ' + this.player.id);
-    console.log('Other player: ' + this.otherPlayer.name + ' with stats: x: ' + this.otherPlayer.x + ', y: ' + this.otherPlayer.y+ ', angle: ' + this.otherPlayer.angle + ', id: ' + this.otherPlayer.id);
 
     // Create an object representing our myGun
     this.myGun = createGun(this, this.player, 0x00ff00);
@@ -137,10 +120,7 @@ function createGun(gameState, player, color) {
 
     var gun = gameState.game.add.sprite(xPosition, yPosition, Sprengja.Resources.BULLET);
     // Set the pivot point to the center of the myGun
-    // gun.anchor.setTo(0.5, 0.5);
-    gameState.game.physics.enable(gun, Phaser.Physics.P2JS, gameState.debug.showCollisionBound);
-    // gameState.game.physics.enable(gun, gameState.debug.showCollisionBound);
-    // gameState.game.physics.p2.enableBody(gun, gameState.debug.showCollisionBound);
+    gameState.game.physics.enable(gun, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
     gun.tint = color;
     gun.body.rotation = player.angle;
     gun.events.onKilled.add(function(myGun) {
@@ -162,38 +142,34 @@ GameState.prototype.setEventHandlers = function() {
     this.socket.on('rotateGun', onRotateGun);
 };
 
-function onGameReady (session) {
-    console.log('game is ready')
+function onGameReady(session) {
+    console.log('Event: onGameReady')
     var gameState = game.state.getCurrentState();
-
-    console.log(session);
-
     gameState.initGame(session);
 }
 
 function onKilledPlayer(session) {
-    console.log('Killed player ' + playerStats.name);
+    console.log('Event: onKilledPlayer (' + playerStats.name + ')');
 
     var gameState = game.state.getCurrentState();
-
 }
 
 function onSocketConnected() {
-    console.log('Connected to socket server');
+    console.log('Event: onSocketConnected');
 }
 
 function onSocketDisconnect() {
-    console.log('Disconnected from socket server');
+    console.log('Event: onSocketDisconnect');
 }
 
 function onShootBullet(session) {
-    console.log('Player shot with parameters: ' + session.bulletData);
+    console.log('Event: onShootBullet(' + session.bulletData + ')');
     var gameState = game.state.getCurrentState();
-
     gameState.shootBullet(session);
 }
 
 function onRotateGun(angle) {
+    console.log('Event: onRotateGun(' + angle + ')');
     var gameState = game.state.getCurrentState();
     gameState.rotateGun(angle);
 }
@@ -216,8 +192,6 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
 
     var bulletData = {x: x, y: y, angle: angle, speed: bulletSpeed};
 
-    console.log(bulletData);
-
     var shootState = this.session.shootBullet(bulletData);
     if (this.socket != null) {
         this.socket.emit('shootBullet', shootState);
@@ -227,10 +201,6 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
 }
 
 GameState.prototype.shootBullet = function(shootState) {
-    console.log(shootState);
-    console.log('current player: ' + this.session.activePlayer.id);
-    console.log('this.player: ' + this.player.id);
-
     // Get a dead bullet from the pool
     var bullet = this.bulletPool.getFirstDead();
 
@@ -240,20 +210,7 @@ GameState.prototype.shootBullet = function(shootState) {
 
     bullet.body.createBodyCallback(this.getCurrentGun(), hitMyGun, this);
     bullet.body.createBodyCallback(this.getOtherGun(), hitOtherGun, this);
-
-    // bullet.body.createBodyCallback(this.groundCollisionGroup, hitGround, this);
-    console.log(bullet);
-    console.log(this);
-
-    // for (var i = 0; i < this.ground.total; i++) {
-    //     var goundTile = this.ground.getAt(i);
-    //     console.log(groundTile);
-    //     bullet.body.createBodyCallback(groundTile, hitGround, this);
-    // }
-
     this.ground.forEach(function(groundBlock){
-        console.log(bullet);
-        console.log(this);
         bullet.body.createBodyCallback(groundBlock, hitGround, this);
     }, this);
 

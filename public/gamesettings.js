@@ -8,6 +8,7 @@ Sprengja.Settings = {
     NUMBER_OF_BULLETS : 20,
     GRAVITY : 980,               // pixels/second/second
     BACKGROUND_COLOR : 0x4488cc,
-    GRAVITY : 980               // pixels/second/second
+    GRAVITY : 980,               // pixels/second/second
+    DEBUG : false                // Debugging information
     
 };
