@@ -4,11 +4,12 @@
     <title>Sprengja</title>
 
     <!-- CSS & Web Fonts -->
-    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu:regular,bold&subset=Latin" />
-    <link rel="stylesheet" type="text/css" href="./css/game.css" />
+    <link rel="stylesheet" type="text/css"
+          href="http://fonts.googleapis.com/css?family=Ubuntu:regular,bold&subset=Latin"/>
+    <link rel="stylesheet" type="text/css" href="./css/game.css"/>
 
     <!-- No Safari title bar -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
 
     <!-- Make the status bar transparent with black text -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,10 +21,10 @@
     <!-- <meta name="viewport" content="initial-scale=1"> -->
 
     <!-- iOS -->
-    <link rel="apple-touch-icon-precomposed" href="./img/icons/60.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="./img/icons/120.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="./img/icons/72.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="./img/icons/144.png" />
+    <link rel="apple-touch-icon-precomposed" href="./img/icons/60.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="./img/icons/120.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="./img/icons/72.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="./img/icons/144.png"/>
 </head>
 <body>
 <div id="game-container" class="container">
@@ -34,7 +35,12 @@
 <div id="message-container" class="container hidden">
     <div class="centered">
         <div id="message">
+            <span id="message-text"></span>
 
+            <div id="input" class="hidden">
+                <input id="text-input" type="text"/>
+                <div id="text-input-ok" class="button"></div>
+            </div>
         </div>
     </div>
 </div>
