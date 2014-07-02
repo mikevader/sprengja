@@ -61,6 +61,21 @@ var setEventHandlers = function() {
 	connection.sockets.on('connection', onSocketConnection);
 };
 
+function normalize(value, min, max){
+    var normalizedValue = (value - min)/(max - min);
+    return normalizedValue;
+};
+
+function createNormalizedTerrain(){
+    var width = 1280;
+    var height = 960;
+    var terrainContour = Sprengja.GraphicsFactory.terrain(width,height,height/7,0.62);
+    for(int i = 0;i<terrainContour.length;i++){
+        terrainContour[i] = normalize(terrainContour[i],0,height);
+    }
+    return terrainContour; 
+};
+
 function createNewSession(room, playerA, playerB) {
 	// gameSessions.push({roomId: room,
 	// 					playerA: playerA,
