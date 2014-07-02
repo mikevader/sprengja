@@ -10,6 +10,7 @@ Sprengja.Message = {
         document.getElementById('message-container').classList.add('hidden');
         document.getElementById('input').classList.add('hidden');
         document.getElementById('text-input-ok').onclick = null;
+        document.getElementById('text-input').value = null;
     },
 
     query : function (message, buttonText, callback) {
