@@ -35,12 +35,10 @@ Sprengja.GraphicsFactory = {
     },
     
     createGroundBlockAt : function(x) {
-        
         // Add the ground blocks, enable physics on each, make them immovable
-        var groundBlock = game.add.sprite(x, game.height - 32, Sprengja.Resources.GROUND);
+        var groundBlock = game.add.sprite(x, game.height - 16, Sprengja.Resources.GROUND);
         game.physics.enable(groundBlock, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
-        groundBlock.body.immovable = true;
-        groundBlock.body.allowGravity = false;
+        groundBlock.body.collideWorldBounds = true;
         groundBlock.body.static = true;
 
         return groundBlock;
