@@ -153,9 +153,9 @@ var Session = function(session) {
 	};
 
 	this.hitPlayer = function(destroyedPlayer) {
-		if (destroyedPlayer === this.playerA) {
+		if (destroyedPlayer.id === this.playerA.id) {
 			this.victoriousPlayer = this.playerB;
-		} else if (destroyedPlayer === this.playerB) {
+		} else if (destroyedPlayer.id === this.playerB.id) {
 			this.victoriousPlayer = this.playerA;
 		} else {
 			this.victoriousPlayer = {name: 'no one'};
@@ -168,7 +168,7 @@ var Session = function(session) {
 	};
 
 	this.hitNothing = function() {
-		if (this.activePlayer == this.playerA) {
+		if (this.activePlayer.id == this.playerA.id) {
 			this.activePlayer = this.playerB;
 		} else {
 			this.activePlayer = this.playerA;
