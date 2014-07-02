@@ -11,6 +11,7 @@ var path = require('path');
 var io = require('socket.io');
 var Session = require('./public/js/Session').Session;
 var Player = require('./Player').Player;
+var Level = require('./public/js/level').Level;
 
 /********************************
  * GAME VARIABLES
@@ -94,7 +95,8 @@ function onPlayerJoinGame(socket, game) {
 		session.playerB.id = waitingPlayer.id;
 		waitingPlayer = null;
         
-        var level = Sprengja.GraphicsFactory.createLevel(1280,960);
+        var level = createLevel(1280,960);
+        console.log('level:   '+level);
         
         socket.to(roomId).emit('load level',level);
         socket.to(roomId).broadcast.emit('load level',level);
@@ -104,6 +106,40 @@ function onPlayerJoinGame(socket, game) {
 	}
 	socket.room = roomId;
 };
+
+    function createLevel(width,height){
+        var level = new Level();
+        var terrainContour =terrain(width,height,height/7,0.62);
+        level.setLevelData(terrainContour);
+        level.setRange(0,height);
+        return level; 
+    };
+    
+    function terrain(width, height, displace, roughness) {
+        var points = [],
+        // Gives us a power of 2 based on our width
+        power = Math.pow(2, Math.ceil(Math.log(width) / (Math.log(2))));
+        
+
+        // Set the initial left point
+        points[0] = (height - height / 6) + (Math.random() * displace * 2) - displace;
+        // set the initial right point
+        points[power] = (height - height / 6) + (Math.random() * displace * 2) - displace;
+        console.log(power);
+        displace *= roughness;
+
+        // Increase the number of segments
+        for (var i = 1; i < power; i *= 2) {
+            // Iterate through each segment calculating the center point
+            for (var j = (power / i) / 2; j < power; j += power / i) {
+                points[j] = ((points[j - (power / i) / 2] + points[j + (power / i) / 2]) / 2);
+                points[j] += (Math.random() * displace * 2) - displace
+            }
+            // reduce our random range
+            displace *= roughness;
+        }
+        return points;
+    };
 
 function onSocketConnection (socket) {
 	util.log('New player has connected: ' + socket.id);

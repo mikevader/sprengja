@@ -1,7 +1,5 @@
 var Level = function(level){
     
-    this.terrainPoints,this.minimumBound,this.maximumBound;
-    
     this.setRange = function(min,max){
         this.minimumBound = min;
         this.maximumBound = max;
@@ -12,3 +10,8 @@ var Level = function(level){
     }
     
 };
+
+// To use insie node.js with require:
+if (typeof exports !== 'undefined') {
+	exports.Level = Level;
+}
