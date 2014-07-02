@@ -160,9 +160,9 @@ GameState.prototype.createLevel = function(level) {
 
     // Create some ground
     this.ground = this.game.add.group();
-    for(var x = 2; x < this.game.width; x += 4) {
+    for(var x = 6; x < this.game.width; x += 12) {
         var terrainBoundY = terrainContour[x];       
-        for(var y = this.game.height - 2;y > terrainBoundY; y -= 4){
+        for(var y = this.game.height - 6;y > terrainBoundY; y -= 12){
             var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
             groundBlock.body.setCollisionGroup(this.groundCollisionGroup);      
             groundBlock.body.collides([this.gunCollisionGroup,this.bulletsCollisionGroup]);
