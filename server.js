@@ -84,7 +84,7 @@ function onPlayerJoinGame(socket, game) {
 		socket.join(roomId)
 		//socket.to(roomId).emit('joined game', {room: roomId, playerId: socket.id});
 		util.log('created new session in room: ' + roomId);
-        socket.to(roomId).emit('showMessage', 'Waiting for other player...\nYour room id is ' + roomId)
+        socket.to(roomId).emit('showMessage', "Welcome " + game.name + "!<br /><br />We're just waiting for another player...<br />Your room id is " + roomId);
 	} else {
 		createNewSession(roomId, waitingPlayer, newPlayer);
 		roomId = 'Room_' + sessionCounter;
