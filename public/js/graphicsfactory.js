@@ -41,9 +41,18 @@ Sprengja.GraphicsFactory = {
         game.physics.enable(bullet, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
         bullet.kill();
         bullet.events.onKilled.add(function(bullet) {
+            var gameState = game.state.getCurrentState();
             Sprengja.Graphics.showExplosionAt(bullet.x, bullet.y);
+            gameState.emitter.kill();
+        }, this);
+        
+        bullet.events.onOutOfBounds.add(function (bullet) {
+            var gameState = game.state.getCurrentState();
+            gameState.session.hitNothing();
         }, this);
         bullet.body.collideWorldBounds = false;
+        bullet.outOfBoundsKill = true;
+        bullet.checkWorldBounds = true;
         
         return bullet;
     },
