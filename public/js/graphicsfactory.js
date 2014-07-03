@@ -45,6 +45,11 @@ Sprengja.GraphicsFactory = {
             Sprengja.Graphics.showExplosionAt(bullet.x, bullet.y);
             gameState.emitter.kill();
         }, this);
+        
+        bullet.events.onOutOfBounds.add(function (bullet) {
+            var gameState = game.state.getCurrentState();
+            gameState.session.hitNothing();
+        }, this);
         bullet.body.collideWorldBounds = false;
         bullet.outOfBoundsKill = true;
         bullet.checkWorldBounds = true;
