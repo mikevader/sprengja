@@ -2,15 +2,15 @@ var Sprengja = Sprengja || {};
 
 Sprengja.Resources = {
     
-    CLOUD : '/img/gfx/ball.png',
-    BULLET : '/img/gfx/bullet.png',
-    GROUND : '/img/gfx/minecraft_ground.png',
-    EXPLOSION : '/img/gfx/explosion.png',
-    NEW_GAME : '/img/gfx/startnewgame.png',
-    FIRE1 : '/img/gfx/fire1.png',
-    FIRE2 : '/img/gfx/fire2.png',
-    FIRE3 : '/img/gfx/fire3.png',
-    SMOKE : '/img/gfx/smoke-puff.png',
+    CLOUD : './img/gfx/ball.png',
+    BULLET : './img/gfx/bullet.png',
+    GROUND : './img/gfx/minecraft_ground.png',
+    EXPLOSION : './img/gfx/explosion.png',
+    NEW_GAME : './img/gfx/startnewgame.png',
+    FIRE1 : './img/gfx/fire1.png',
+    FIRE2 : './img/gfx/fire2.png',
+    FIRE3 : './img/gfx/fire3.png',
+    SMOKE : './img/gfx/smoke-puff.png',
 
 
 
