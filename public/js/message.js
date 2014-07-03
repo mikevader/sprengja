@@ -6,21 +6,31 @@ Sprengja.Message = {
         document.getElementById('message-container').classList.remove('hidden');
     },
 
+    showWithOk : function (message) {
+        this.showWithButton(message, 'OK', this.hide)
+    },
+
+    showWithButton : function (message, buttonText, callback) {
+        var button = document.getElementById('button');
+        button.onclick = callback;
+        button.innerHTML = buttonText;
+        button.classList.remove('hidden');
+        this.show(message);
+    },
+
     hide : function () {
         document.getElementById('message-container').classList.add('hidden');
         document.getElementById('input').classList.add('hidden');
-        document.getElementById('text-input-ok').onclick = null;
+        var button = document.getElementById('button');
+        button.classList.add('hidden');
+        button.onclick = null;
+        button.innerHTML = null;
         document.getElementById('text-input').value = null;
     },
 
     query : function (message, buttonText, callback) {
-        var okButton = document.getElementById('text-input-ok');
-
-        okButton.onclick = callback;
-        okButton.innerHTML = buttonText;
-
         document.getElementById('input').classList.remove('hidden');
-        this.show(message);
+        this.showWithButton(message, buttonText, callback);
     },
 
     getInputText : function () {
