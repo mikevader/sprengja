@@ -188,7 +188,6 @@ GameState.prototype.shootBullet = function(shootState) {
     // Phaser takes care of this for me by setting this flag
     // but you can do it yourself by killing the bullet if
     // its x,y coordinates are outside of the world.
-    bullet.body.collideWorldBounds = true;
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the myGun position.
@@ -212,7 +211,6 @@ function hitGun(bulletBody, gunBody) {
     
     gun.damage(10);
     bullet.kill();
-    this.emitter.kill();
 
     if (gun == gameState.myGun) {
         console.log('hit myself: loose!');
@@ -234,7 +232,6 @@ function hitGround(bulletBody, groundBlockBody) {
    
     var gameState = game.state.getCurrentState();
     groundBlock.kill();
-    this.emitter.kill();
     
     if (bullet.alive) {
         bullet.kill();
