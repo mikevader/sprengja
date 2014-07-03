@@ -43,6 +43,7 @@ Sprengja.GraphicsFactory = {
         bullet.events.onKilled.add(function(bullet) {
             Sprengja.Graphics.showExplosionAt(bullet.x, bullet.y);
         }, this);
+        bullet.body.collideWorldBounds = false;
         
         return bullet;
     },
