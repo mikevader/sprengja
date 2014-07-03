@@ -73,22 +73,6 @@ GameState.prototype.drawTerrainCountour = function(contour,shouldDraw) {
     }
 };
 
-GameState.prototype.initRemoteGame = function(session) {
-    console.log('Start remote game');
-    var host = location.origin.replace(/^http/, 'ws'),
-        socket = io.connect(host, {transports: ['websocket']});
-
-    this.socket = socket;
-    this.setEventHandlers();
-    var session = new Session();
-    session.resetPlayerIds();
-
-    Sprengja.Message.query('Username:', 'Create new game', function () {
-        socket.emit('join game', {name: Sprengja.Message.getInputText(), session: new Session()});
-        Sprengja.Message.hide();
-    });
-};
-
 GameState.prototype.initGame = function(session) {
     if (this.initialized) {
         return;
@@ -111,11 +95,6 @@ GameState.prototype.initGame = function(session) {
         this.session.remote = false;
         this.player = this.session.playerA;
         this.otherPlayer = this.session.playerB;
-    } else {
-        this.session = new Session(session);
-        this.session.remote = true;
-        this.player = this.session.playerById(this.socket.socket.sessionid);
-        this.otherPlayer = (this.session.playerA == this.player) ? this.session.playerB : this.session.playerA;
     }
 
     // Create an object representing our myGun
@@ -137,17 +116,6 @@ function createGun(gameState, player) {
     gun.body.collides(gameState.bulletsCollisionGroup);
     gun.body.collides(gameState.groundCollisionGroup, gunHitGround, gameState);
     return gun;
-};
-
-GameState.prototype.setEventHandlers = function() {
-    this.socket.on('connect', onSocketConnected);
-    this.socket.on('disconnect', onSocketDisconnect);
-    this.socket.on('shootBullet', onShootBullet);
-    this.socket.on('game ready', onGameReady);
-    this.socket.on('rotateGun', onRotateGun);
-    this.socket.on('showMessage', onShowMessage);
-    this.socket.on('hideMessage', onHideMessage);
-    this.socket.on('load level',onLevelInit);
 };
 
 GameState.prototype.createLevel = function(level) {
@@ -176,52 +144,6 @@ GameState.prototype.createLevel = function(level) {
     }
 };
 
-function onGameReady(session) {
-    console.log('Event: onGameReady')
-    var gameState = game.state.getCurrentState();
-    gameState.initGame(session);
-    Sprengja.Message.hide();
-}
-
-function onLevelInit(level){
-    var gameState = game.state.getCurrentState();
-    console.log('Event: onLevelInit: '+level);
-    gameState.createLevel(level);
-}
-
-function onKilledPlayer(session) {
-    console.log('Event: onKilledPlayer (' + playerStats.name + ')');
-
-    var gameState = game.state.getCurrentState();
-}
-
-function onSocketConnected() {
-    console.log('Event: onSocketConnected');
-}
-
-function onSocketDisconnect() {
-    console.log('Event: onSocketDisconnect');
-}
-
-function onShootBullet(session) {
-    console.log('Event: onShootBullet(' + session.bulletData + ')');
-    var gameState = game.state.getCurrentState();
-    gameState.shootBullet(session);
-}
-
-function onRotateGun(angle) {
-    var gameState = game.state.getCurrentState();
-    gameState.rotateGun(angle);
-}
-
-function onShowMessage(message) {
-    Sprengja.Message.show(message);
-}
-
-function onHideMessage() {
-    Sprengja.Message.hide();
-}
-
 GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     // Enforce a short delay between shots by recording
     // the time that each bullet is shot and testing if
@@ -241,11 +163,7 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
     var bulletData = {x: x, y: y, angle: angle, speed: bulletSpeed};
 
     var shootState = this.session.shootBullet(bulletData);
-    if (this.socket != null) {
-        this.socket.emit('shootBullet', shootState);
-    } else {
-        this.shootBullet(shootState);
-    }
+    this.shootBullet(shootState);
 }
 
 GameState.prototype.shootBullet = function(shootState) {
@@ -319,11 +237,7 @@ function gunHitGround(gunBody, groundBlockBody) {
 }
 
 GameState.prototype.triggerGunRotation = function(angle) {
-    if (this.socket != null) {
-        this.socket.emit('rotateGun', angle);
-    } else {
-        this.rotateGun(angle);
-    }
+    this.rotateGun(angle);
 }
 
 GameState.prototype.rotateGun = function(angle) {
