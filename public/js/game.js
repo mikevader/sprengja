@@ -16,6 +16,15 @@ GameState.prototype.create = function () {
     this.game.physics.p2.restitution = 0.9;
     this.game.physics.p2.setImpactEvents(true);
     
+    //Particle emitter declaration
+    this.emitter = game.add.emitter(game.world.centerX, game.world.centerY, 400);
+    this.emitter.makeParticles( [ Sprengja.Resources.FIRE1, Sprengja.Resources.FIRE2, Sprengja.Resources.FIRE3, Sprengja.Resources.SMOKE ] );
+    this.emitter.gravity = 200;
+    this.emitter.setAlpha(1, 0, 1000);
+    this.emitter.setScale(0.5, 0, 0.5, 0, 1000);
+    //this.emitter.start(false, 3000, 5);
+
+    
     
     // might be interessting to use
     // game.physics.p2.setPostBroadphaseCallback(checkPossibleColl, this);
@@ -158,7 +167,6 @@ GameState.prototype.createLevel = function(level) {
     var levelMax = level.maximumBound;
     var terrainContour = [];
     for(var i = 0;i<levelData.length;i++){
-        //(max'-min')/(max-min)*(value-min)+min'
         terrainContour[i] = this.game.height / (levelMax - levelMin) * (levelData[i] - levelMin);
     }
     this.drawTerrainCountour(terrainContour,Sprengja.Settings.DEBUG);
@@ -245,6 +253,7 @@ GameState.prototype.pullTrigger = function(bulletSpeedRatio) {
         this.socket.emit('shootBullet', shootState);
     } else {
         this.shootBullet(shootState);
+        this.emitter.start(false, 2000, 5);
     }
 }
 
@@ -286,6 +295,7 @@ function hitGun(bulletBody, gunBody) {
     
     gun.damage(10);
     bullet.kill();
+    this.emitter.kill();
 
     if (gun == gameState.myGun) {
         console.log('hit myself: loose!');
@@ -304,6 +314,7 @@ function hitGround(bulletBody, groundBlockBody) {
    
     var gameState = game.state.getCurrentState();
     groundBlock.kill();
+    this.emitter.kill();
     
     if (bullet.alive) {
         bullet.kill();
@@ -340,6 +351,18 @@ GameState.prototype.update = function() {
     // Rotate all living bullets to match their trajectory
     this.bulletPool.forEachAlive(function(bullet) {
         bullet.body.rotation = Math.atan2(bullet.body.velocity.y, bullet.body.velocity.x) + Math.PI;
+        
+        var px = bullet.body.velocity.x;
+        var py = bullet.body.velocity.y;
+
+        px *= -1;
+        py *= -1;
+
+        this.emitter.minParticleSpeed.set(px, py);
+        this.emitter.maxParticleSpeed.set(px, py);
+
+        this.emitter.emitX = bullet.body.x;
+        this.emitter.emitY = bullet.body.y;
     }, this);
 
     if (this.initialized) {
