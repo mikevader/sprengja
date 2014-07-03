@@ -35,7 +35,7 @@ Sprengja.Menu = {
         return {
 
             show: function () {
-                newClientButton = initButton(Sprengja.Resources.NEW_CLIENT_GAME, startNewLocalGame, game.world.centerY - (30 + 80));
+                newClientButton = initButton(Sprengja.Resources.NEW_GAME, startNewLocalGame, game.world.centerY);
                 buttons = [newClientButton];
             }
         }
