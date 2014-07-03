@@ -234,11 +234,11 @@ function hitGun(bulletBody, gunBody) {
     if (gun == gameState.myGun) {
         console.log('hit myself: loose!');
         gameState.session.hitPlayer(gameState.player);
-        Sprengja.Message.showWithButton('Player 2 win', 'OK', function() {location.reload()});
+        Sprengja.Message.showWithButton(gameState.otherPlayer.name + ' wins', 'OK', function() {location.reload()});
     } else {
         console.log('hit other player: win!');
         gameState.session.hitPlayer(gameState.otherPlayer);
-        Sprengja.Message.showWithButton('Player 1 win', 'OK', function() {location.reload()});
+        Sprengja.Message.showWithButton(gameState.player.name + ' wins', 'OK', function() {location.reload()});
     }
     
     gameState.initialized = false;
