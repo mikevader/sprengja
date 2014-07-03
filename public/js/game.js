@@ -74,6 +74,10 @@ GameState.prototype.drawTerrainCountour = function(contour,shouldDraw) {
 };
 
 GameState.prototype.initGame = function(session) {
+    var playerName1, playerName2, gameState;
+
+    gameState = this;
+
     if (this.initialized) {
         return;
     }
@@ -91,21 +95,36 @@ GameState.prototype.initGame = function(session) {
     this.coordinateModelY.setDeviceCoordinatesInverted(true);
 
     if (typeof session === 'undefined') {
-        this.session = new Session(session);
-        this.session.remote = false;
-        this.player = this.session.playerA;
-        this.otherPlayer = this.session.playerB;
+        Sprengja.Message.query("1st players name:", "Save", function () {
+            playerName1 = Sprengja.Message.getInputText();
+            Sprengja.Message.hide();
+
+            Sprengja.Message.query("2nd players name:", "Get this thing started!", function () {
+                playerName2 = Sprengja.Message.getInputText();
+                Sprengja.Message.hide();
+
+                gameState.session = new Session(session, playerName1, playerName2);
+                gameState.session.remote = false;
+                gameState.player = gameState.session.playerA;
+                gameState.otherPlayer = gameState.session.playerB;
+
+                initObjects();
+            });
+        });
+    } else {
+        initObjects();
     }
 
-    // Create an object representing our myGun
-    this.myGun = createGun(this, this.player);
-  
-    // Create an object representing our otherGun
-    this.otherGun = createGun(this, this.otherPlayer);
-   
-    this.session.init();
-    this.initialized = true;
+    function initObjects() {
+        // Create an object representing our myGun
+        gameState.myGun = createGun(gameState, gameState.player);
+        // Create an object representing our otherGun
+        gameState.otherGun = createGun(gameState, gameState.otherPlayer);
+        gameState.session.init();
+        gameState.initialized = true;
+    };
 };
+
 
 function createGun(gameState, player) {
     var xPosition = gameState.coordinateModelX.worldToScreen(player.x);

@@ -11,17 +11,17 @@ var SessionState = {
 	GAME_OVER: 'targetHit'
 };
 
-var Session = function(session) {
+var Session = function(session, playerName1, playerName2) {
 	this.state = SessionState.INIT;
 	this.victoriousPlayer = null;
 	var playerA, playerB, activePlayer, finished, bulletData, remote;
 
 	console.log('Init: ' + this.state);
 
-	function createNewGame() {
+	function createNewGame(playerName1, playerName2) {
 		console.log('Slot A is free');
 		playerA = {
-			name: 'A',
+			name: playerName1,
 			x: 0.1,
 			y: 0.9,
 			angle: 0,
@@ -31,7 +31,7 @@ var Session = function(session) {
 
 		console.log('Slot B is free');
 		playerB = {
-			name: 'B',
+			name: playerName2,
 			x: 0.9,
 			y: 0.9,
 			angle: -Math.PI,
@@ -52,7 +52,7 @@ var Session = function(session) {
 		this.victoriousPlayer = session.victoriousPlayer;
 		this.remote = session.remote;
 	} else {
-		createNewGame();
+		createNewGame(playerName1, playerName2);
 		this.playerA = playerA;
 		this.playerB = playerB;
 		this.finished = finished;
