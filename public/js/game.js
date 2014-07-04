@@ -16,12 +16,25 @@ GameState.prototype.create = function () {
     this.game.physics.p2.restitution = 0.9;
     this.game.physics.p2.setImpactEvents(true);
     
-    //Particle emitter declaration
+    //Particle emitter declaration for the fire trail animation
     this.emitter = game.add.emitter(game.world.centerX, game.world.centerY, 400);
     this.emitter.makeParticles( [ Sprengja.Resources.FIRE1, Sprengja.Resources.FIRE2, Sprengja.Resources.FIRE3, Sprengja.Resources.SMOKE ] );
     this.emitter.gravity = 200;
     this.emitter.setAlpha(1, 0, 1000);
     this.emitter.setScale(0.5, 0, 0.5, 0, 1000);
+    
+    //Particle emitter declaration for the rain animation
+    var rainEmitter = game.add.emitter(game.world.centerX, 0, 400);
+	rainEmitter.width = game.world.width;
+    rainEmitter.angle = 12; 
+	rainEmitter.makeParticles(Sprengja.Resources.RAIN);
+	rainEmitter.minParticleScale = 0.1;
+	rainEmitter.maxParticleScale = 0.5;
+	rainEmitter.setYSpeed(300, 500);
+	rainEmitter.setXSpeed(-5, 5);
+	rainEmitter.minRotation = 0;
+	rainEmitter.maxRotation = 0;
+	rainEmitter.start(false, 1600, 5, 0);
     
     
     
@@ -160,11 +173,9 @@ GameState.prototype.createLevel = function(level) {
 
     // Create some ground
     this.ground = this.game.add.group();
-    var yMax = 0;
     for(var x = 6; x < this.game.width; x += 12) {
         var terrainBoundY = terrainContour[x];       
         for(var y = this.game.height - 6;y > terrainBoundY; y -= 12){
-            if(y > yMax) yMax = y;
             var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
             groundBlock.body.setCollisionGroup(this.groundCollisionGroup);      
             groundBlock.body.collides([this.gunCollisionGroup,this.bulletsCollisionGroup]);
@@ -253,7 +264,7 @@ function hitGround(bulletBody, groundBlockBody) {
     var groundBlock = groundBlockBody.sprite;
     var bullet = bulletBody.sprite;
     var gameState = game.state.getCurrentState();
-    var circle = new Phaser.Circle(groundBlockBody.x,groundBlockBody.y,50);    
+    var circle = new Phaser.Circle(groundBlockBody.x,groundBlockBody.y,getRandomInt(40,50));    
     this.ground.forEach(function(entry){
         if(Phaser.Circle.contains(circle,entry.x,entry.y)){
             entry.kill();
@@ -266,6 +277,10 @@ function hitGround(bulletBody, groundBlockBody) {
         bullet.kill();
         gameState.session.hitNothing();
     }
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function gunHitGround(gunBody, groundBlockBody) {

@@ -11,6 +11,7 @@ Sprengja.Resources = {
     FIRE2 : './img/gfx/fire2.png',
     FIRE3 : './img/gfx/fire3.png',
     SMOKE : './img/gfx/smoke-puff.png',
+    RAIN : './img/gfx/rain.png',
 
 
 
@@ -33,6 +34,7 @@ Sprengja.Resources = {
         preloadImage(Sprengja.Resources.FIRE2);
         preloadImage(Sprengja.Resources.FIRE3);
         preloadImage(Sprengja.Resources.SMOKE);
+        preloadImage(Sprengja.Resources.RAIN); 
 
         preloadSpritesheet(Sprengja.Resources.EXPLOSION, 128, 128);
     }
