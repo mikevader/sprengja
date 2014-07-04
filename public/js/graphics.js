@@ -34,6 +34,7 @@ Sprengja.Graphics = (function() {
                 return bullet;
             },
             
+            
             showExplosionAt : function(x, y) {
             
                 var explosionPool = getExplosionPool(),
@@ -56,6 +57,8 @@ Sprengja.Graphics = (function() {
                 explosion.angle = game.rnd.integerInRange(0, 360);
                 // Play the animation
                 explosion.animations.play('boom');
+                
+                return explosion;
             }
         } 
     })(); // Immediate execution

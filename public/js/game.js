@@ -24,6 +24,8 @@ GameState.prototype.create = function () {
     this.emitter.setScale(0.5, 0, 0.5, 0, 1000);
     
     
+    
+    
     // might be interessting to use
     // game.physics.p2.setPostBroadphaseCallback(checkPossibleColl, this);
     this.bulletsCollisionGroup = game.physics.p2.createCollisionGroup();
@@ -139,9 +141,11 @@ GameState.prototype.createLevel = function(level) {
 
     // Create some ground
     this.ground = this.game.add.group();
+    var yMax = 0;
     for(var x = 6; x < this.game.width; x += 12) {
         var terrainBoundY = terrainContour[x];       
         for(var y = this.game.height - 6;y > terrainBoundY; y -= 12){
+            if(y > yMax) yMax = y;
             var groundBlock = Sprengja.GraphicsFactory.createGroundBlockAt(x,y);
             groundBlock.body.setCollisionGroup(this.groundCollisionGroup);      
             groundBlock.body.collides([this.gunCollisionGroup,this.bulletsCollisionGroup]);
@@ -238,8 +242,14 @@ function hitGround(bulletBody, groundBlockBody) {
     console.log('hit ground');
     var groundBlock = groundBlockBody.sprite;
     var bullet = bulletBody.sprite;
-   
     var gameState = game.state.getCurrentState();
+    var circle = new Phaser.Circle(groundBlockBody.x,groundBlockBody.y,50);    
+    this.ground.forEach(function(entry){
+        if(Phaser.Circle.contains(circle,entry.x,entry.y)){
+            entry.kill();
+        }
+    });
+   
     groundBlock.kill();
     this.emitter.kill();
     

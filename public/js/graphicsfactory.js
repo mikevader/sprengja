@@ -40,8 +40,9 @@ Sprengja.GraphicsFactory = {
         var bullet = game.add.sprite(0, 0, Sprengja.Resources.BULLET);
         game.physics.enable(bullet, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
         bullet.kill();
+        var gameState = game.state.getCurrentState();
         bullet.events.onKilled.add(function(bullet) {
-            Sprengja.Graphics.showExplosionAt(bullet.x, bullet.y);
+           Sprengja.Graphics.showExplosionAt(bullet.x, bullet.y);
         }, this);
         bullet.body.collideWorldBounds = false;
         
@@ -51,7 +52,7 @@ Sprengja.GraphicsFactory = {
     createExplosion : function() {
         var explosion = game.add.sprite(0, 0, Sprengja.Resources.EXPLOSION);
         explosion.anchor.setTo(0.5, 0.5);
-
+      
         // Add an animation for the explosion that kills the sprite when the
         // animation is complete
         var animation = explosion.animations.add('boom', [0,1,2,3], 60, false);
