@@ -37,7 +37,7 @@ Sprengja.GraphicsFactory = {
     },
 
     createKilledBullet : function() {
-        var bullet = game.add.sprite(0, 0, Sprengja.Resources.BULLET);
+        var bullet = game.add.sprite(0, 0, Sprengja.Resources.ROCKET);
         game.physics.enable(bullet, Phaser.Physics.P2JS, Sprengja.Settings.DEBUG);
         bullet.kill();
         var gameState = game.state.getCurrentState();
