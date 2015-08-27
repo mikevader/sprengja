@@ -12,11 +12,12 @@
   "license": "BSD",
   "private": true,
   "engines" : {
-    "node": "0.10.x"
+    "node": "0.12.x",
+    "npm": "2.14.0"
   },
   "dependencies": {
-    "express": "~3.1.0",
-    "socket.io": "0.9.16",
-    "bower": "~1.3.3"
+    "express": "~4.13.3",
+    "socket.io": "1.3.6",
+    "bower": "~1.5.2"
   }
 }
